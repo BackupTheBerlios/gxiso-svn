@@ -10,13 +10,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gxiso 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-03-15 00:50+0100\n"
-"PO-Revision-Date: 2005-02-18 18:53+0100\n"
+"POT-Creation-Date: 2005-03-30 16:44+0200\n"
+"PO-Revision-Date: 2005-03-30 16:48+0200\n"
 "Last-Translator: Gautier Portet <kassoulet@gmail.com>\n"
 "Language-Team: French <en@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
 #: src/gxiso.py:137
 #, python-format
@@ -45,9 +45,8 @@ msgid "<b>Cannot open '%s'</b>"
 msgstr "<b>Impossible d'ouvrir '%s'</b>"
 
 #: src/gxiso.py:413
-#, fuzzy
 msgid "<b>Cannot read iso (too big ?)</b>"
-msgstr "<b>Impossible d'écrire sur la xbox:</b>\n"
+msgstr "<b>Impossible de lire l'iso en entier (trop gros ?)</b>"
 
 #: src/gxiso.py:421 src/gxiso.py:432
 msgid "<b>Not a valid xbox iso image</b>"
@@ -241,3 +240,4 @@ msgstr "gXiso, travail en cours"
 #: src/gxiso.glade:863
 msgid "_Pause"
 msgstr "_Pause"
+
