@@ -1,5 +1,5 @@
 recursive-include src gxiso.py gxiso.png gxiso.glade gxiso.gladep
-recursive-include po *.po
+recursive-include po *.po POTFILES.in
 include gxiso.desktop.in MANIFEST.in
 include ChangeLog
 include setup.py setup.cfg

@@ -737,6 +737,7 @@ class DialogMain(Window):
 		filter.add_pattern("*.iso")
 
 		dialog.set_filter(filter)
+		#dialog.set_local_only(False)
 
 		dialog.show_all()
 		result = dialog.run()
@@ -769,7 +770,6 @@ class DialogMain(Window):
 	def on_checkbutton_upload_toggled(self, widget):
 		self.settings["upload"] = self.ui_checkbutton_upload.get_active()
 		self.apply_ui_changes()
-		
 		
 	def on_button_quit_clicked(self, widget):
 		self.save_settings()
@@ -817,12 +817,13 @@ def find_data_dir():
 	return None	
 
 
-
 if __name__ == "__main__":
 
-	gtk.glade.textdomain("gxiso")
-	gettext.install("gxiso")
+	name = "gxiso"
 
+	gtk.glade.bindtextdomain(name)
+	gtk.glade.textdomain(name)
+	gettext.install(name, unicode=1)
 	
 	DATADIR = find_data_dir()
 	if DATADIR:

@@ -10,12 +10,12 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gxiso 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-01-26 16:32+0100\n"
-"PO-Revision-Date: 2005-01-26 00:42+0100\n"
+"POT-Creation-Date: 2005-02-12 03:01+0100\n"
+"PO-Revision-Date: 2005-02-12 03:00+0100\n"
 "Last-Translator: Gautier Portet <kassoulet@gmail.com>\n"
 "Language-Team: French <en@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/gxiso.py:137
@@ -24,7 +24,7 @@ msgid ""
 "<b>Cannot create folder on xbox:</b>\n"
 "%s"
 msgstr ""
-"<b>Impossible de créer le répertoire sur la xbox:</b>\n"
+"<b>Impossible de crÃ©er le rÃ©pertoire sur la xbox:</b>\n"
 "%s"
 
 #: src/gxiso.py:150
@@ -32,12 +32,12 @@ msgid ""
 "<b>Cannot connect to xbox:\n"
 "</b>\n"
 msgstr ""
-"<b>Impossible de se connecter à la xbox:\n"
+"<b>Impossible de se connecter Ã  la xbox:\n"
 "</b>\n"
 
 #: src/gxiso.py:166
 msgid "<b>Cannot write to xbox:</b>\n"
-msgstr "<b>Impossible d'écrire sur la xbox:</b>\n"
+msgstr "<b>Impossible d'Ã©crire sur la xbox:</b>\n"
 
 #: src/gxiso.py:401
 #, python-format
@@ -63,7 +63,7 @@ msgstr "environ %d minutes restantes."
 
 #: src/gxiso.py:497
 msgid "Paused"
-msgstr "Pausé"
+msgstr "PausÃ©"
 
 #: src/gxiso.py:499
 #, python-format
@@ -94,15 +94,15 @@ msgstr "Extraction et Transfert"
 #: src/gxiso.py:669
 #, python-format
 msgid "Connecting to ftp://%s@%s"
-msgstr "Connexion à ftp://%s@%s"
+msgstr "Connexion Ã  ftp://%s@%s"
 
 #: src/gxiso.py:701
 msgid ""
 "<b>Transfer timeout</b>\n"
 "The xbox is not responding"
 msgstr ""
-"<b>Dépassement du délai d'attente</b>\n"
-"La xbox ne répond pas."
+"<b>DÃ©passement du dÃ©lai d'attente</b>\n"
+"La xbox ne rÃ©pond pas."
 
 #: src/gxiso.py:726
 msgid "Please select an iso to read."
@@ -114,11 +114,15 @@ msgstr "Ouvrir iso Xbox"
 
 #: src/gxiso.py:752
 msgid "Select Extract Folder"
-msgstr "Selectionnez le répertoire où extraire"
+msgstr "Selectionnez le rÃ©pertoire oÃ¹ extraire"
 
 #: src/gxiso.py:837
 msgid "Cannot find data folder, please file a bug"
-msgstr "Impossible de trouver le répertoire de données."
+msgstr "Impossible de trouver le rÃ©pertoire de donnÃ©es."
+
+#: src/gxiso.glade:96
+msgid "Defaults"
+msgstr "Valeurs par dÃ©faut"
 
 #: src/gxiso.glade:168
 msgid "_Go"
@@ -134,7 +138,7 @@ msgstr "<b>Xiso</b>"
 
 #: src/gxiso.glade:376
 msgid "Save to local folder"
-msgstr "Sauver dans un répertoire local"
+msgstr "Sauver dans un rÃ©pertoire local"
 
 #: src/gxiso.glade:448
 msgid "<b>Extract</b>"
@@ -142,7 +146,7 @@ msgstr "<b>Extraire</b>"
 
 #: src/gxiso.glade:500
 msgid "Upload to Xbox"
-msgstr "Envoyer à la Xbox"
+msgstr "Envoyer a la Xbox"
 
 #: src/gxiso.glade:532
 msgid "Address"
@@ -162,7 +166,7 @@ msgstr "Disque"
 
 #: src/gxiso.glade:718
 msgid "Folder"
-msgstr "Répertoire"
+msgstr "RÃ©pertoire"
 
 #: src/gxiso.glade:776
 msgid "<b>Upload</b>"
