@@ -1,0 +1,6 @@
+2004-01-26
+	translation and installation system
+2004-01-17 
+	buffered mode for ftp (no more a tmp file)
+2004-01-20
+	cleanup, setup.py
