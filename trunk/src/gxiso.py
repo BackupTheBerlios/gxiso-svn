@@ -288,7 +288,7 @@ class XisoExtractor:
 
 	def write_file_parse(self,filename,size,sector):
 		# do nothing but try to read name of main xbe
-		if filename == "default.xbe":
+		if filename.lower() == "default.xbe":
 			# search xbe real name
 			self.parse_xbe(sector)
 
