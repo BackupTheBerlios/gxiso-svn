@@ -143,6 +143,7 @@ class FTPWriter:
 		try:
 			self.session = ftplib.FTP(self.ip,self.login,self.password)
 			self.makedirs(self.base_folder)
+			self.session.set_pasv(False)
 		except ftplib.all_errors, details:
 			if details.__class__ == socket.error:
 				details = details[1]
