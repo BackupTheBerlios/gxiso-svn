@@ -1,0 +1,169 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-01-26 00:51+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/gxiso.py:138
+#, python-format
+msgid ""
+"<b>Cannot create folder on xbox:</b>\n"
+"%s"
+msgstr ""
+
+#: src/gxiso.py:151
+msgid ""
+"<b>Cannot connect to xbox:\n"
+"</b>\n"
+msgstr ""
+
+#: src/gxiso.py:167
+msgid "<b>Cannot write to xbox:</b>\n"
+msgstr ""
+
+#: src/gxiso.py:402
+#, python-format
+msgid "<b>Cannot open '%s'</b>"
+msgstr ""
+
+#: src/gxiso.py:412 src/gxiso.py:423
+msgid "<b>Not a valid xbox iso image</b>"
+msgstr ""
+
+#: src/gxiso.py:491
+msgid "less than one minute left."
+msgstr ""
+
+#: src/gxiso.py:493
+msgid "about one minute left."
+msgstr ""
+
+#: src/gxiso.py:495
+#, python-format
+msgid "about %d minutes left."
+msgstr ""
+
+#: src/gxiso.py:498
+msgid "Paused"
+msgstr ""
+
+#: src/gxiso.py:500
+#, python-format
+msgid "File %d/%d, %s"
+msgstr ""
+
+#: src/gxiso.py:616
+#, python-format
+msgid "Title name: <b>%s</b> (%d MB)"
+msgstr ""
+
+#: src/gxiso.py:636
+msgid "Parsing"
+msgstr ""
+
+#: src/gxiso.py:656
+msgid "Extracting"
+msgstr ""
+
+#: src/gxiso.py:659
+msgid "Uploading"
+msgstr ""
+
+#: src/gxiso.py:662
+msgid "Extracting and Uploading"
+msgstr ""
+
+#: src/gxiso.py:670
+#, python-format
+msgid "Connecting to ftp://%s@%s"
+msgstr ""
+
+#: src/gxiso.py:702
+msgid ""
+"<b>Transfer timeout</b>\n"
+"The xbox is not responding"
+msgstr ""
+
+#: src/gxiso.py:727
+msgid "Please select an iso to read."
+msgstr ""
+
+#: src/gxiso.py:733
+msgid "Open Xbox Iso"
+msgstr ""
+
+#: src/gxiso.py:753
+msgid "Select Extract Folder"
+msgstr ""
+
+#: src/gxiso.py:837
+msgid "Cannot find data folder, please file a bug"
+msgstr ""
+
+#: src/gxiso.glade:168
+msgid "_Go"
+msgstr ""
+
+#: src/gxiso.glade:276 src/gxiso.glade:421
+msgid "Browse"
+msgstr ""
+
+#: src/gxiso.glade:324
+msgid "<b>Xiso</b>"
+msgstr ""
+
+#: src/gxiso.glade:376
+msgid "Save to local folder"
+msgstr ""
+
+#: src/gxiso.glade:448
+msgid "<b>Extract</b>"
+msgstr ""
+
+#: src/gxiso.glade:500
+msgid "Upload to Xbox"
+msgstr ""
+
+#: src/gxiso.glade:532
+msgid "Address"
+msgstr ""
+
+#: src/gxiso.glade:586
+msgid "Login"
+msgstr ""
+
+#: src/gxiso.glade:627
+msgid "Password"
+msgstr ""
+
+#: src/gxiso.glade:681
+msgid "Drive"
+msgstr ""
+
+#: src/gxiso.glade:718
+msgid "Folder"
+msgstr ""
+
+#: src/gxiso.glade:776
+msgid "<b>Upload</b>"
+msgstr ""
+
+#: src/gxiso.glade:812
+msgid "gXiso is working"
+msgstr ""
+
+#: src/gxiso.glade:855
+msgid "_Pause"
+msgstr ""

@@ -18,6 +18,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import os
+import sys
 import time
 import struct
 import thread
@@ -161,7 +162,7 @@ class FTPWriter:
 		try:
 			self.session.storbinary("STOR %s" % filename, self)
 		except ftplib.error_reply, details:
-			log( _("warning: STOR '%s' = %s") % (filename,str(details)) )
+			log( "warning: STOR '%s' = %s" % (filename,str(details)) )
 		except ftplib.all_errors, details:
 			self.error = _("<b>Cannot write to xbox:</b>\n"+str(details))
 		self.lock.acquire()
@@ -791,8 +792,46 @@ class GXiso:
 		gtk.main()
 
 
+
+
+def find_data_dir():
+	# search for our data :)
+	dir = "."
+	
+	# current folder
+	if os.path.exists(os.path.join(dir,"gxiso.glade")):
+		return dir
+		
+	# executable folder
+	dir, t = os.path.split(os.path.abspath(sys.argv[0]))		
+
+	if os.path.exists(os.path.join(dir,"gxiso.glade")):
+		return dir
+
+	# or system folder
+	h, t = os.path.split(dir)
+	if t == "bin":
+		dir = os.path.join(h, "share")
+		dir = os.path.join(dir, "gxiso")
+		if os.path.exists(os.path.join(dir,"gxiso.glade")):
+			return dir
+	return None	
+
+
+
 if __name__ == "__main__":
 
-	gettext.install("gxiso")
-	program = GXiso()
-	program.main()
+	DATADIR = find_data_dir()
+	if DATADIR:
+		print DATADIR
+	
+		saved_folder = os.getcwd()
+		os.chdir(DATADIR)
+	
+		gettext.install("gxiso")
+		program = GXiso()
+		program.main()
+		
+		os.chdir(saved_folder)
+	else:
+		show_error(_("Cannot find data folder, please file a bug"))
