@@ -1,3 +1,8 @@
+2005-03-14
+	added error when it's impossible to correctly seek (and read) the
+	complete file (ie 2Gb+ files blocked by samba)
+	set FTP mode to active by default, since EvolutionX doesn't support
+	passive mode
 2005-02-18
 	fixed translation charsets
 	destination folder is now a base folder, saved with settings

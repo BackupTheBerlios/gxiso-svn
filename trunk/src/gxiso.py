@@ -156,7 +156,7 @@ class FTPWriter:
 	def quit(self):
 		# end ftp session
 		try:
-		self.session.quit()
+			self.session.quit()
 		except:
 			pass
 
@@ -402,9 +402,15 @@ class XisoExtractor:
 		try:
 			self.iso = open(iso_name, 'rb');
 		except IOError:
-			return _("<b>Cannot open '%s'</b>" % iso_name)
+			return _("<b>Cannot open '%s'</b>") % iso_name
 
 		signature = "MICROSOFT*XBOX*MEDIA"
+
+		# make sure file is really readable in whole
+		try:
+			self.iso.seek(0,SEEK_END)
+		except IOError:
+			return _("<b>Cannot read iso (too big ?)</b>")
 
 		# skip beggining
 		self.iso.seek(0x10000,SEEK_SET)
@@ -620,7 +626,7 @@ class DialogMain(Window):
 		error = xiso.parse(filename)
 		if error:
 			self.xbe_name = None
-			self.ui_label_iso_infos.set_markup("<b>not a valid xbox iso image!</b>")
+			self.ui_label_iso_infos.set_markup(error)
 		else:
 			self.xbe_name = xiso.xbe_name
 			self.ui_label_iso_infos.set_markup(_("Title name: <b>%s</b> (%d MB)") %
