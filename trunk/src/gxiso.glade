@@ -5,7 +5,7 @@
 
 <widget class="GtkDialog" id="dialog_main">
   <property name="visible">True</property>
-  <property name="title" translatable="yes">gXiso</property>
+  <property name="title">gXiso</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
   <property name="modal">False</property>
@@ -257,7 +257,7 @@
 			      <property name="editable">True</property>
 			      <property name="visibility">True</property>
 			      <property name="max_length">0</property>
-			      <property name="text" translatable="yes"></property>
+			      <property name="text"></property>
 			      <property name="has_frame">True</property>
 			      <property name="invisible_char">*</property>
 			      <property name="activates_default">False</property>
@@ -402,7 +402,7 @@
 			      <property name="editable">True</property>
 			      <property name="visibility">True</property>
 			      <property name="max_length">0</property>
-			      <property name="text" translatable="yes"></property>
+			      <property name="text"></property>
 			      <property name="has_frame">True</property>
 			      <property name="invisible_char">*</property>
 			      <property name="activates_default">False</property>
@@ -554,7 +554,7 @@
 				  <property name="editable">True</property>
 				  <property name="visibility">True</property>
 				  <property name="max_length">0</property>
-				  <property name="text" translatable="yes">192.168.0.6</property>
+				  <property name="text">192.168.0.6</property>
 				  <property name="has_frame">True</property>
 				  <property name="invisible_char">*</property>
 				  <property name="activates_default">False</property>
@@ -608,7 +608,7 @@
 				  <property name="editable">True</property>
 				  <property name="visibility">True</property>
 				  <property name="max_length">0</property>
-				  <property name="text" translatable="yes">xbox</property>
+				  <property name="text">xbox</property>
 				  <property name="has_frame">True</property>
 				  <property name="invisible_char">*</property>
 				  <property name="activates_default">False</property>
@@ -649,7 +649,7 @@
 				  <property name="editable">True</property>
 				  <property name="visibility">False</property>
 				  <property name="max_length">0</property>
-				  <property name="text" translatable="yes">xbox</property>
+				  <property name="text">xbox</property>
 				  <property name="has_frame">True</property>
 				  <property name="invisible_char">*</property>
 				  <property name="activates_default">False</property>
@@ -699,7 +699,7 @@
 			      <child>
 				<widget class="GtkComboBox" id="combobox_xbox_drive">
 				  <property name="visible">True</property>
-				  <property name="items" translatable="yes">C
+				  <property name="items">C
 E
 F
 G</property>
@@ -740,7 +740,7 @@ G</property>
 				  <property name="editable">True</property>
 				  <property name="visibility">True</property>
 				  <property name="max_length">0</property>
-				  <property name="text" translatable="yes"></property>
+				  <property name="text"></property>
 				  <property name="has_frame">True</property>
 				  <property name="invisible_char">*</property>
 				  <property name="activates_default">False</property>

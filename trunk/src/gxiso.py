@@ -23,7 +23,6 @@ import struct
 import thread
 import ftplib
 import socket
-import types
 import pygtk
 pygtk.require('2.0')
 import gtk
@@ -40,10 +39,12 @@ SEEK_END = 2
 FILE_DIR = 0x10
 
 def gtk_iteration():
+	# allow GTK to process events outside mainloop
 	while gtk.events_pending():
 		gtk.main_iteration(gtk.FALSE)
 
 def read_unpack(file, format):
+	# read and unpack a structure as in struct.unpack
 	buffer = file.read(struct.calcsize(format))
 	return struct.unpack(format,buffer)
 
@@ -54,6 +55,7 @@ class ExtractError(Exception):
 		return repr(self.message)
 
 def show_error(message):
+	# display a message dialog with an error message
 	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, 
 		gtk.BUTTONS_OK, message)
 	dialog.set_markup(message)
@@ -61,12 +63,13 @@ def show_error(message):
 	dialog.hide()
 
 def log(message):
+	# display a log message on stdout
 	print message
-
 	
 total_size=0
 
 class NullWriter:
+	# do nothing writer
 	def init(self):
 		pass
 	def open(self, filename):
@@ -82,17 +85,19 @@ class NullWriter:
 	def quit(self):
 		pass
 
-
 class FileWriter:
+	# write to a file
 	def __init__(self, base_folder):
 		self.base_folder = base_folder
 	def init(self):
 		try:
 			os.makedirs(self.base_folder)
 		except OSError:
+			# folders maybe already here ?
 			pass
+		# TODO: we must check for an error !
 		self.chdir(self.base_folder)
-		pass
+		
 	def open(self, filename):
 		self.file = open(filename,"wb")
 	def write(self, buffer):
@@ -103,20 +108,16 @@ class FileWriter:
 		try:
 			os.mkdir(name)
 		except OSError:
-			log( _("warning: cannot mkdir '%s'") % name)
 			return False
 		return True
 	def chdir(self, name):
 		try:
 			os.chdir(name)
 		except OSError:
-			#raise ExtractError(_("cannot chdir '%s'") % name)
-			log(_("cannot chdir '%s'") % name)
 			return False
 		return True
 	def quit(self):
 		pass
-
 
 class FTPWriter:
 	def __init__(self, ip, login, password, base_folder):
@@ -126,6 +127,7 @@ class FTPWriter:
 		self.base_folder = base_folder
 
 	def makedirs(self, path):
+		# create all folders in path
 		path.replace("\\","/")
 		dirs = path.split("/")
 		for folder in dirs:
@@ -134,9 +136,9 @@ class FTPWriter:
 					if not self.mkdir(folder):
 						raise ExtractError(_("<b>Cannot create folder on xbox:</b>\n%s"%path ))
 					self.chdir(folder)
-					
 
 	def init(self):
+		# connect to ftp
 		log("connecting to %s@%s" % (self.login,self.ip))
 		try:
 			self.session = ftplib.FTP(self.ip,self.login,self.password)
@@ -146,25 +148,28 @@ class FTPWriter:
 				details = details[1]
 				
 			raise ExtractError(_("<b>Cannot connect to xbox:\n</b>\n"+str(details)))
+			
+		# we must lock the buffer since its shaded between 2 threads
 		self.lock = thread.allocate_lock()
 
 	def quit(self):
+		# end ftp session
 		self.session.quit()
 
 	def upload(self,filename):
+		# upload a file
 		try:
 			self.session.storbinary("STOR %s" % filename, self)
 		except ftplib.error_reply, details:
-			print repr(details)
-			print _("warning stor '%s' (%s)") % (filename,str(details))
+			log( _("warning: STOR '%s' = %s") % (filename,str(details)) )
 		except ftplib.all_errors, details:
-			self.error = _("<b>Cannot write to xbox !</b>\n"+str(details))
+			self.error = _("<b>Cannot write to xbox:</b>\n"+str(details))
 		self.lock.acquire()
 		self.buffer=None
 		self.lock.release()
 
-
 	def open(self, filename):
+		# new file
 		self.buffer = ""
 		self.closing = False
 		self.error = None
@@ -173,7 +178,7 @@ class FTPWriter:
 		self.filename = filename
 		
 	def write(self, buffer):
-
+		# fill buffer with data from file
 		try:
 			while len(self.buffer) > 0:
 				# wait buffer read
@@ -188,10 +193,11 @@ class FTPWriter:
 		self.lock.release()
 		
 	def close(self):
+		# end of the file
 		self.closing = True
 
 		while True:
-			# wait buffer write
+			# wait end of buffer upload
 			wait = True
 			self.lock.acquire()
 			if self.buffer == None:
@@ -208,7 +214,6 @@ class FTPWriter:
 		except ftplib.error_reply:
 			pass
 		except ftplib.all_errors:
-			print _("error mkdir '%s'") % name
 			return False
 		return True
 	def chdir(self, name):
@@ -217,14 +222,13 @@ class FTPWriter:
 		except ftplib.error_reply:
 			pass
 		except ftplib.all_errors:
-			print _("error chdir '%s'") % name
 			return False
 		return True
 
 	def read(self, size):
 		# called by ftp storbinary
 		while True:
-			# wait buffer write
+			# wait for buffer to be filled
 			self.lock.acquire()
 			l = len(self.buffer)
 			self.lock.release()
@@ -283,12 +287,13 @@ class XisoExtractor:
 		self.active=True
 
 	def write_file_parse(self,filename,size,sector):
+		# do nothing but try to read name of main xbe
 		if filename == "default.xbe":
 			# search xbe real name
 			self.parse_xbe(sector)
 
 	def write_file_real(self,filename,size,sector):
-	
+		# actually write or upload the file
 		self.current_file = filename
 	
 		self.iso.seek(sector*2048,SEEK_SET)
@@ -312,6 +317,8 @@ class XisoExtractor:
 			self.writer.close()
 		
 	def parse_xbe(self,sector):
+		# search for xbe name
+		
 		self.iso.seek(sector*2048,SEEK_SET)
 		self.iso.seek(0x190,SEEK_CUR)
 		name = self.iso.read(80)
@@ -324,7 +331,8 @@ class XisoExtractor:
 		
 
 	def browse_file(self, sector, offset=0):
-	
+		# browse an iso file entry
+		
 		if self.canceled: 
 			return
 		
@@ -345,7 +353,7 @@ class XisoExtractor:
 				# browse folder
 				self.writer.mkdir(filename)
 				if not self.writer.chdir(filename):
-					raise ExtractError("<b>Cannot change to directory !</b>%s"%filename)
+					raise ExtractError("<b>Cannot change to directory:</b>%s"%filename)
 				self.browse_file(newsector)
 				self.writer.chdir("..")
 		else:
@@ -419,6 +427,7 @@ class XisoExtractor:
 		return None
 
 class Window:
+	# all windows herits from this class
 	def load_glade(self, xml, container):
 		self.dialog_xml = gtk.glade.XML(xml, container)
 	
@@ -478,9 +487,9 @@ class DialogProgress(Window):
 		remaining = int((now-self.starttime) / fraction-(now-self.starttime))
 		minutes = remaining/60
 		if minutes<1:
-			text = _("less than 1 minute left.")
+			text = _("less than one minute left.")
 		elif minutes==1:
-			text = _("about 1 minute left.")
+			text = _("about one minute left.")
 		else :
 			text = _("about %d minutes left." % minutes)
 
@@ -541,7 +550,7 @@ class DialogMain(Window):
 		try:
 			f = open(filename,"r")
 		except IOError:
-			log("cannot read "+filename)
+			log("warning: cannot read "+filename)
 			return 
 			
 		try:
@@ -561,7 +570,7 @@ class DialogMain(Window):
 			f.write( repr(self.settings) )
 			f.close()
 		except IOError:
-			log("cannot write "+filename)
+			log("warning: cannot write "+filename)
 
 	def settings_to_ui(self):
 		self.ui_checkbutton_extract.set_active(self.settings["extract"])
@@ -609,10 +618,9 @@ class DialogMain(Window):
 				self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
 
 	def extract_xiso(self):
+	
 		# get infos from ui
-		
 		drives = ["/c/","/e/","/f/","/g/"]
-		
 		filename = self.ui_entry_xiso.get_text()
 		local_folder = self.ui_entry_folder.get_text()
 		ftp_folder = drives[self.ui_combobox_xbox_drive.get_active()] + \
@@ -698,15 +706,14 @@ class DialogMain(Window):
 			xiso.canceled = progress.canceled
 			xiso.paused = progress.paused
 			
-			
 			# and let our working thread be called
 			gtk_iteration()
 			time.sleep(0.1)
 
 		if xiso.error:
 			show_error(xiso.error)
-
-		print "OK! (%.2f MiB/s)" % (total_size/(time.time()-progress.starttime)/(1024*1024))
+		else:
+			log( "done! (%.2f MiB/s)" % (total_size/(time.time()-progress.starttime)/(1024*1024)))
 		progress.stop()
 
 	def on_button_defaults_clicked(self, widget):
@@ -786,5 +793,6 @@ class GXiso:
 
 if __name__ == "__main__":
 
+	gettext.install("gxiso")
 	program = GXiso()
 	program.main()

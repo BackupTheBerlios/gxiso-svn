@@ -1,0 +1,20 @@
+what ?
+ 	gXiso is tool to extract and/or upload xbox iso images to xbox.
+system ?
+	Linux
+interface ?
+	GTK2
+langage ?
+	Python
+	
+how to run ?
+	cd src; ./gxiso.py
+	
+notes: 
+	* xbox has to be started (ahem) and running a FTP server to receive files.
+	* if you erase files or destroy your xbox: WE ARE NOT RESPONSIBLE !
+	* USE AT YOU OWN RISK !
+	* do not use with copyrighted material.
+	* use with this: http://www.pouet.net/prod.php?which=10586
+ 
+ send feedback: kassoulet@gmail.com
