@@ -823,8 +823,6 @@ if __name__ == "__main__":
 
 	DATADIR = find_data_dir()
 	if DATADIR:
-		print DATADIR
-	
 		saved_folder = os.getcwd()
 		os.chdir(DATADIR)
 	
