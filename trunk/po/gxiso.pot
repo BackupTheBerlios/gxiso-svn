@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-01-26 01:15+0100\n"
+"POT-Creation-Date: 2005-01-26 16:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,95 +16,95 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/gxiso.py:138
+#: src/gxiso.py:137
 #, python-format
 msgid ""
 "<b>Cannot create folder on xbox:</b>\n"
 "%s"
 msgstr ""
 
-#: src/gxiso.py:151
+#: src/gxiso.py:150
 msgid ""
 "<b>Cannot connect to xbox:\n"
 "</b>\n"
 msgstr ""
 
-#: src/gxiso.py:167
+#: src/gxiso.py:166
 msgid "<b>Cannot write to xbox:</b>\n"
 msgstr ""
 
-#: src/gxiso.py:402
+#: src/gxiso.py:401
 #, python-format
 msgid "<b>Cannot open '%s'</b>"
 msgstr ""
 
-#: src/gxiso.py:412 src/gxiso.py:423
+#: src/gxiso.py:411 src/gxiso.py:422
 msgid "<b>Not a valid xbox iso image</b>"
 msgstr ""
 
-#: src/gxiso.py:491
+#: src/gxiso.py:490
 msgid "less than one minute left."
 msgstr ""
 
-#: src/gxiso.py:493
+#: src/gxiso.py:492
 msgid "about one minute left."
 msgstr ""
 
-#: src/gxiso.py:495
+#: src/gxiso.py:494
 #, python-format
 msgid "about %d minutes left."
 msgstr ""
 
-#: src/gxiso.py:498
+#: src/gxiso.py:497
 msgid "Paused"
 msgstr ""
 
-#: src/gxiso.py:500
+#: src/gxiso.py:499
 #, python-format
 msgid "File %d/%d, %s"
 msgstr ""
 
-#: src/gxiso.py:616
+#: src/gxiso.py:615
 #, python-format
 msgid "Title name: <b>%s</b> (%d MB)"
 msgstr ""
 
-#: src/gxiso.py:636
+#: src/gxiso.py:635
 msgid "Parsing"
 msgstr ""
 
-#: src/gxiso.py:656
+#: src/gxiso.py:655
 msgid "Extracting"
 msgstr ""
 
-#: src/gxiso.py:659
+#: src/gxiso.py:658
 msgid "Uploading"
 msgstr ""
 
-#: src/gxiso.py:662
+#: src/gxiso.py:661
 msgid "Extracting and Uploading"
 msgstr ""
 
-#: src/gxiso.py:670
+#: src/gxiso.py:669
 #, python-format
 msgid "Connecting to ftp://%s@%s"
 msgstr ""
 
-#: src/gxiso.py:702
+#: src/gxiso.py:701
 msgid ""
 "<b>Transfer timeout</b>\n"
 "The xbox is not responding"
 msgstr ""
 
-#: src/gxiso.py:727
+#: src/gxiso.py:726
 msgid "Please select an iso to read."
 msgstr ""
 
-#: src/gxiso.py:733
+#: src/gxiso.py:732
 msgid "Open Xbox Iso"
 msgstr ""
 
-#: src/gxiso.py:753
+#: src/gxiso.py:752
 msgid "Select Extract Folder"
 msgstr ""
 

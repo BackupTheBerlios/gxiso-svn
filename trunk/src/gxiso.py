@@ -29,7 +29,6 @@ pygtk.require('2.0')
 import gtk
 import gtk.glade
 import gettext
-_=gettext.gettext
 
 BUFFER_SIZE=1024*16
 
@@ -821,12 +820,15 @@ def find_data_dir():
 
 if __name__ == "__main__":
 
+	gtk.glade.textdomain("gxiso")
+	gettext.install("gxiso")
+
+	
 	DATADIR = find_data_dir()
 	if DATADIR:
 		saved_folder = os.getcwd()
 		os.chdir(DATADIR)
 	
-		gettext.install("gxiso")
 		program = GXiso()
 		program.main()
 		
