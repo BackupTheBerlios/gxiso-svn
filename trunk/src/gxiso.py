@@ -155,7 +155,10 @@ class FTPWriter:
 
 	def quit(self):
 		# end ftp session
+		try:
 		self.session.quit()
+		except:
+			pass
 
 	def upload(self,filename):
 		# upload a file
