@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# gXiso - GTK2 Xbox Xiso eXtractor
+# gXiso - GTK2 Xbox Xiso eXtractor 
 # Copyright ( C) 2005 Gautier Portet < kassoulet gmail com >
 
 # This program is free software; you can redistribute it and/or modify
