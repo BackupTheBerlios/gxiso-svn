@@ -22,6 +22,8 @@ import time
 import struct
 import thread
 import ftplib
+import socket
+import types
 import pygtk
 pygtk.require('2.0')
 import gtk
@@ -74,9 +76,9 @@ class NullWriter:
 	def close(self):
 		pass
 	def mkdir(self, name):
-		pass
+		return True
 	def chdir(self, name):
-		pass
+		return True
 	def quit(self):
 		pass
 
@@ -102,12 +104,16 @@ class FileWriter:
 			os.mkdir(name)
 		except OSError:
 			log( _("warning: cannot mkdir '%s'") % name)
+			return False
+		return True
 	def chdir(self, name):
 		try:
 			os.chdir(name)
 		except OSError:
 			#raise ExtractError(_("cannot chdir '%s'") % name)
 			log(_("cannot chdir '%s'") % name)
+			return False
+		return True
 	def quit(self):
 		pass
 
@@ -119,14 +125,27 @@ class FTPWriter:
 		self.password = password
 		self.base_folder = base_folder
 
+	def makedirs(self, path):
+		path.replace("\\","/")
+		dirs = path.split("/")
+		for folder in dirs:
+			if folder != "":
+				if not self.chdir(folder):
+					if not self.mkdir(folder):
+						raise ExtractError(_("<b>Cannot create folder on xbox:</b>\n%s"%path ))
+					self.chdir(folder)
+					
+
 	def init(self):
 		log("connecting to %s@%s" % (self.login,self.ip))
 		try:
 			self.session = ftplib.FTP(self.ip,self.login,self.password)
-			self.chdir(self.base_folder)
+			self.makedirs(self.base_folder)
 		except ftplib.all_errors, details:
-			print str(details)
-			raise ExtractError(_("<b>Cannot connect to xbox:\n"+details[1]+"</b>\n\nIs the xbox FTP server running?\nVerify address, login and password."))
+			if details.__class__ == socket.error:
+				details = details[1]
+				
+			raise ExtractError(_("<b>Cannot connect to xbox:\n</b>\n"+str(details)))
 		self.lock = thread.allocate_lock()
 
 	def quit(self):
@@ -139,7 +158,6 @@ class FTPWriter:
 			print repr(details)
 			print _("warning stor '%s' (%s)") % (filename,str(details))
 		except ftplib.all_errors, details:
-			#print _("error stor '%s' (%s)") % (filename,str(details))
 			self.error = _("<b>Cannot write to xbox !</b>\n"+str(details))
 		self.lock.acquire()
 		self.buffer=None
@@ -191,6 +209,8 @@ class FTPWriter:
 			pass
 		except ftplib.all_errors:
 			print _("error mkdir '%s'") % name
+			return False
+		return True
 	def chdir(self, name):
 		try:
 			self.session.cwd(name)
@@ -198,6 +218,8 @@ class FTPWriter:
 			pass
 		except ftplib.all_errors:
 			print _("error chdir '%s'") % name
+			return False
+		return True
 
 	def read(self, size):
 		# called by ftp storbinary
@@ -322,7 +344,8 @@ class XisoExtractor:
 			if filename_size > 0:
 				# browse folder
 				self.writer.mkdir(filename)
-				self.writer.chdir(filename)
+				if not self.writer.chdir(filename):
+					raise ExtractError("<b>Cannot change to directory !</b>%s"%filename)
 				self.browse_file(newsector)
 				self.writer.chdir("..")
 		else:
@@ -344,6 +367,7 @@ class XisoExtractor:
 			self.writer.init()
 			self.write_file = self.write_file_real
 			self.parse_internal(iso_name)
+			self.writer.quit()
 		except ExtractError, details:
 			os.chdir(saved_folder)
 			self.error = details.message
@@ -642,6 +666,9 @@ class DialogMain(Window):
 		xiso = XisoExtractor(writer)
 		thread.start_new_thread(xiso.extract, (filename,))
 
+		previous_position = 0
+		time_inactive = 0.0
+
 		while xiso.active:
 		
 			if xiso.write_position == 0:
@@ -656,10 +683,21 @@ class DialogMain(Window):
 				fraction = float(xiso.write_position)/float(total_size)
 				progress.set_current_file(xiso.current_file, xiso.files, total_files)
 				progress.set_fraction(fraction)
-	
+				
+				# detect transfer timeout
+				if xiso.write_position == previous_position:
+					time_inactive += 0.1
+				else:
+					time_inactive = 0
+				if time_inactive > 5.0:
+					xiso.error = _("<b>Transfer timeout</b>\nThe xbox is not responding")
+					xiso.active = False
+				previous_position = xiso.write_position
+				
 			# handle events
 			xiso.canceled = progress.canceled
 			xiso.paused = progress.paused
+			
 			
 			# and let our working thread be called
 			gtk_iteration()
