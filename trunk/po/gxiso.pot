@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-02-12 03:01+0100\n"
+"POT-Creation-Date: 2005-02-18 21:34+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -64,110 +64,163 @@ msgstr ""
 msgid "File %d/%d, %s"
 msgstr ""
 
-#: src/gxiso.py:615
+#: src/gxiso.py:622
 #, python-format
 msgid "Title name: <b>%s</b> (%d MB)"
 msgstr ""
 
-#: src/gxiso.py:635
+#: src/gxiso.py:664
 msgid "Parsing"
 msgstr ""
 
-#: src/gxiso.py:655
+#: src/gxiso.py:684
 msgid "Extracting"
 msgstr ""
 
-#: src/gxiso.py:658
+#: src/gxiso.py:687
 msgid "Uploading"
 msgstr ""
 
-#: src/gxiso.py:661
+#: src/gxiso.py:690
 msgid "Extracting and Uploading"
 msgstr ""
 
-#: src/gxiso.py:669
+#: src/gxiso.py:698
 #, python-format
 msgid "Connecting to ftp://%s@%s"
 msgstr ""
 
-#: src/gxiso.py:701
+#: src/gxiso.py:730
 msgid ""
 "<b>Transfer timeout</b>\n"
 "The xbox is not responding"
 msgstr ""
 
-#: src/gxiso.py:726
+#: src/gxiso.py:755
 msgid "Please select an iso to read."
 msgstr ""
 
-#: src/gxiso.py:732
+#: src/gxiso.py:761
 msgid "Open Xbox Iso"
 msgstr ""
 
-#: src/gxiso.py:752
+#: src/gxiso.py:788
 msgid "Select Extract Folder"
 msgstr ""
 
-#: src/gxiso.py:837
+#: src/gxiso.py:861
+#, python-format
+msgid ""
+"<big><b>A programming error has been detected during the execution of this "
+"program.</b></big>\n"
+"\n"
+"<tt><small>%s</small></tt>"
+msgstr ""
+
+#: src/gxiso.py:865
+msgid "Bug Detected"
+msgstr ""
+
+#: src/gxiso.py:892
 msgid "Cannot find data folder, please file a bug"
 msgstr ""
 
-#: src/gxiso.glade:96
+#: src/gxiso.glade:51
+msgid "Reset values to typical defaults"
+msgstr ""
+
+#: src/gxiso.glade:97
 msgid "Defaults"
 msgstr ""
 
-#: src/gxiso.glade:168
+#: src/gxiso.glade:124
+msgid "Start extraction/upload"
+msgstr ""
+
+#: src/gxiso.glade:170
 msgid "_Go"
 msgstr ""
 
-#: src/gxiso.glade:276 src/gxiso.glade:421
+#: src/gxiso.glade:258
+msgid "The iso's filename"
+msgstr ""
+
+#: src/gxiso.glade:279 src/gxiso.glade:426
 msgid "Browse"
 msgstr ""
 
-#: src/gxiso.glade:324
+#: src/gxiso.glade:327
 msgid "<b>Xiso</b>"
 msgstr ""
 
-#: src/gxiso.glade:376
+#: src/gxiso.glade:378
+msgid "Do you want to extract to the local disk ?"
+msgstr ""
+
+#: src/gxiso.glade:380
 msgid "Save to local folder"
 msgstr ""
 
-#: src/gxiso.glade:448
+#: src/gxiso.glade:405
+msgid "The folder where you want the iso to be extracted"
+msgstr ""
+
+#: src/gxiso.glade:453
 msgid "<b>Extract</b>"
 msgstr ""
 
-#: src/gxiso.glade:500
-msgid "Upload to Xbox"
+#: src/gxiso.glade:504
+msgid "Do you want to send the iso contents to an xbox ?"
 msgstr ""
 
-#: src/gxiso.glade:532
+#: src/gxiso.glade:506
+msgid "Upload to Xbox (via FTP)"
+msgstr ""
+
+#: src/gxiso.glade:538
 msgid "Address"
 msgstr ""
 
-#: src/gxiso.glade:586
+#: src/gxiso.glade:559
+msgid "The IP address of the Xbox (typically 192.168.0.6)"
+msgstr ""
+
+#: src/gxiso.glade:593
 msgid "Login"
 msgstr ""
 
-#: src/gxiso.glade:627
+#: src/gxiso.glade:614
+msgid "The login for the Xbox's FTP server"
+msgstr ""
+
+#: src/gxiso.glade:634
 msgid "Password"
 msgstr ""
 
-#: src/gxiso.glade:681
+#: src/gxiso.glade:655
+msgid "The password for the Xbox's FTP server"
+msgstr ""
+
+#: src/gxiso.glade:689
 msgid "Drive"
 msgstr ""
 
-#: src/gxiso.glade:718
+#: src/gxiso.glade:725
 msgid "Folder"
 msgstr ""
 
-#: src/gxiso.glade:776
+#: src/gxiso.glade:746
+msgid "The base folder on the Xbox (typically \"games\")"
+msgstr ""
+
+#: src/gxiso.glade:784
 msgid "<b>Upload</b>"
 msgstr ""
 
-#: src/gxiso.glade:812
+#: src/gxiso.glade:820
 msgid "gXiso is working"
 msgstr ""
 
-#: src/gxiso.glade:855
+#: src/gxiso.glade:863
 msgid "_Pause"
 msgstr ""

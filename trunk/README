@@ -8,7 +8,7 @@ langage ?
 	Python
 	
 how to install ?
-	python setup.py install
+	sudo python setup.py install
 	
 notes: 
 	* xbox has to be started (ahem) and running a FTP server to receive files.

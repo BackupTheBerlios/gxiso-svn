@@ -518,12 +518,13 @@ class DialogMain(Window):
 
 		# default settings
 		self.default_settings = {
-			"extract": True,
+			"extract": False,
 			"upload": True,
 			"xbox_ip": "192.168.0.6",
 			"xbox_login": "xbox",
 			"xbox_password": "xbox",
-			"xbox_drive": 2
+			"xbox_drive": 2,
+			"xbox_folder": "games"
 		}
 		self.settings = self.default_settings
 		
@@ -559,7 +560,12 @@ class DialogMain(Window):
 			pass
 			
 		f.close()
-		self.settings_to_ui()	
+		try:
+			self.settings_to_ui()
+		except KeyError:
+			log("warning: error while applying settings, fallback to defaults.")
+			self.settings = self.default_settings
+			self.settings_to_ui()
 		
 	def save_settings(self):
 	
@@ -578,6 +584,7 @@ class DialogMain(Window):
 		self.ui_entry_xbox_address.set_text(self.settings["xbox_ip"])
 		self.ui_entry_xbox_login.set_text(self.settings["xbox_login"])
 		self.ui_entry_xbox_password.set_text(self.settings["xbox_password"])
+		self.ui_entry_xbox_folder.set_text(self.settings["xbox_folder"])
 		self.ui_combobox_xbox_drive.set_active(self.settings["xbox_drive"])
 	
 	def settings_from_ui(self):
@@ -586,10 +593,10 @@ class DialogMain(Window):
 		self.settings["xbox_ip"] = self.ui_entry_xbox_address.get_text()
 		self.settings["xbox_login"] = self.ui_entry_xbox_login.get_text()
 		self.settings["xbox_password"] = self.ui_entry_xbox_password.get_text()
+		self.settings["xbox_folder"] = self.ui_entry_xbox_folder.get_text()
 		self.settings["xbox_drive"] = self.ui_combobox_xbox_drive.get_active()
 
 	def apply_ui_changes(self):
-	
 		# extract
 		if self.ui_checkbutton_extract.get_active():
 			self.ui_entry_folder.set_sensitive(True)
@@ -617,6 +624,18 @@ class DialogMain(Window):
 			if self.ui_entry_folder.get_text() != "":
 				self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
 
+	def xboxify_filename(self, filename):
+		filters = (
+			".",
+			",",
+			";",
+		)
+		name = filename[:40]
+		for f in filters:
+			name = name.replace(f," ")
+		return name
+
+
 	def extract_xiso(self):
 	
 		# get infos from ui
@@ -625,6 +644,16 @@ class DialogMain(Window):
 		local_folder = self.ui_entry_folder.get_text()
 		ftp_folder = drives[self.ui_combobox_xbox_drive.get_active()] + \
 			self.ui_entry_xbox_folder.get_text()
+
+		if ftp_folder[-1] != "/":
+			ftp_folder += "/"
+		
+		if self.xbe_name:
+			ftp_folder += self.xboxify_filename(self.xbe_name)
+		else:
+			name = os.path.basename(self.iso_name)
+			name, ext = os.path.splitext(name)
+			ftp_folder += self.xboxify_filename(name)
 
 		ftp_ip = self.ui_entry_xbox_address.get_text()
 		ftp_login = self.ui_entry_xbox_login.get_text()
@@ -743,11 +772,17 @@ class DialogMain(Window):
 		result = dialog.run()
 		dialog.hide_all()	
 		if result == gtk.RESPONSE_OK:
-			self.ui_entry_xiso.set_text(dialog.get_filename())
-			self.get_iso_infos(dialog.get_filename())
+			self.iso_name = dialog.get_filename()
+			self.ui_entry_xiso.set_text(self.iso_name)
+			self.get_iso_infos(self.iso_name)
 			if (self.xbe_name):
-				self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
-				self.ui_entry_xbox_folder.set_text(self.xbe_name)
+				pass
+				#self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
+				#self.ui_label_xbox_folder.set_markup("<small>%s</small>" % self.xbe_name)
+			else:
+				name = os.path.basename(self.iso_name)
+				name, ext = os.path.splitext(name)
+				#self.ui_label_xbox_folder.set_markup("<small>%s</small>" % name)
 
 	def on_button_folder_browse_clicked(self, widget):
 		dialog = gtk.FileChooserDialog(_("Select Extract Folder"),None,
@@ -817,7 +852,26 @@ def find_data_dir():
 	return None	
 
 
+def excepthook(type, value, tb):
+	import StringIO, traceback
+	trace = StringIO.StringIO()
+	traceback.print_exception(type, value, tb, None, trace)
+	print trace.getvalue()
+	message = _(
+	"<big><b>A programming error has been detected during the execution of this program.</b></big>"
+	"\n\n<tt><small>%s</small></tt>") % trace.getvalue()
+	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, 
+		gtk.BUTTONS_OK, message)
+	dialog.set_title(_("Bug Detected"))
+	dialog.set_markup(message)
+	dialog.run()
+	dialog.hide()
+	sys.exit(1)
+
+
 if __name__ == "__main__":
+
+	sys.excepthook = excepthook
 
 	name = "gxiso"
 

@@ -48,6 +48,7 @@
 	  <child>
 	    <widget class="GtkButton" id="button_defaults">
 	      <property name="visible">True</property>
+	      <property name="tooltip" translatable="yes">Reset values to typical defaults</property>
 	      <property name="can_default">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -120,6 +121,7 @@
 	  <child>
 	    <widget class="GtkButton" id="button_ok">
 	      <property name="visible">True</property>
+	      <property name="tooltip" translatable="yes">Start extraction/upload</property>
 	      <property name="can_default">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -253,6 +255,7 @@
 			  <child>
 			    <widget class="GtkEntry" id="entry_xiso">
 			      <property name="visible">True</property>
+			      <property name="tooltip" translatable="yes">The iso's filename</property>
 			      <property name="can_focus">True</property>
 			      <property name="editable">True</property>
 			      <property name="visibility">True</property>
@@ -372,6 +375,7 @@
 		      <child>
 			<widget class="GtkCheckButton" id="checkbutton_extract">
 			  <property name="visible">True</property>
+			  <property name="tooltip" translatable="yes">Do you want to extract to the local disk ?</property>
 			  <property name="can_focus">True</property>
 			  <property name="label" translatable="yes">Save to local folder</property>
 			  <property name="use_underline">True</property>
@@ -398,6 +402,7 @@
 			  <child>
 			    <widget class="GtkEntry" id="entry_folder">
 			      <property name="visible">True</property>
+			      <property name="tooltip" translatable="yes">The folder where you want the iso to be extracted</property>
 			      <property name="can_focus">True</property>
 			      <property name="editable">True</property>
 			      <property name="visibility">True</property>
@@ -496,8 +501,9 @@
 		      <child>
 			<widget class="GtkCheckButton" id="checkbutton_upload">
 			  <property name="visible">True</property>
+			  <property name="tooltip" translatable="yes">Do you want to send the iso contents to an xbox ?</property>
 			  <property name="can_focus">True</property>
-			  <property name="label" translatable="yes">Upload to Xbox</property>
+			  <property name="label" translatable="yes">Upload to Xbox (via FTP)</property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
 			  <property name="focus_on_click">True</property>
@@ -523,7 +529,7 @@
 			    <widget class="GtkHBox" id="hbox11">
 			      <property name="visible">True</property>
 			      <property name="homogeneous">False</property>
-			      <property name="spacing">0</property>
+			      <property name="spacing">4</property>
 
 			      <child>
 				<widget class="GtkLabel" id="label18">
@@ -550,6 +556,7 @@
 			      <child>
 				<widget class="GtkEntry" id="entry_xbox_address">
 				  <property name="visible">True</property>
+				  <property name="tooltip" translatable="yes">The IP address of the Xbox (typically 192.168.0.6)</property>
 				  <property name="can_focus">True</property>
 				  <property name="editable">True</property>
 				  <property name="visibility">True</property>
@@ -577,7 +584,7 @@
 			    <widget class="GtkHBox" id="hbox12">
 			      <property name="visible">True</property>
 			      <property name="homogeneous">False</property>
-			      <property name="spacing">0</property>
+			      <property name="spacing">4</property>
 
 			      <child>
 				<widget class="GtkLabel" id="label19">
@@ -604,6 +611,7 @@
 			      <child>
 				<widget class="GtkEntry" id="entry_xbox_login">
 				  <property name="visible">True</property>
+				  <property name="tooltip" translatable="yes">The login for the Xbox's FTP server</property>
 				  <property name="can_focus">True</property>
 				  <property name="editable">True</property>
 				  <property name="visibility">True</property>
@@ -622,7 +630,6 @@
 
 			      <child>
 				<widget class="GtkLabel" id="label21">
-				  <property name="width_request">70</property>
 				  <property name="visible">True</property>
 				  <property name="label" translatable="yes">Password</property>
 				  <property name="use_underline">False</property>
@@ -645,6 +652,7 @@
 			      <child>
 				<widget class="GtkEntry" id="entry_xbox_password">
 				  <property name="visible">True</property>
+				  <property name="tooltip" translatable="yes">The password for the Xbox's FTP server</property>
 				  <property name="can_focus">True</property>
 				  <property name="editable">True</property>
 				  <property name="visibility">False</property>
@@ -672,7 +680,7 @@
 			    <widget class="GtkHBox" id="hbox13">
 			      <property name="visible">True</property>
 			      <property name="homogeneous">False</property>
-			      <property name="spacing">0</property>
+			      <property name="spacing">4</property>
 
 			      <child>
 				<widget class="GtkLabel" id="label20">
@@ -713,7 +721,6 @@ G</property>
 
 			      <child>
 				<widget class="GtkLabel" id="label22">
-				  <property name="width_request">70</property>
 				  <property name="visible">True</property>
 				  <property name="label" translatable="yes">Folder</property>
 				  <property name="use_underline">False</property>
@@ -736,6 +743,7 @@ G</property>
 			      <child>
 				<widget class="GtkEntry" id="entry_xbox_folder">
 				  <property name="visible">True</property>
+				  <property name="tooltip" translatable="yes">The base folder on the Xbox (typically &quot;games&quot;)</property>
 				  <property name="can_focus">True</property>
 				  <property name="editable">True</property>
 				  <property name="visibility">True</property>
@@ -797,7 +805,7 @@ G</property>
 	  </child>
 	</widget>
 	<packing>
-	  <property name="padding">0</property>
+	  <property name="padding">4</property>
 	  <property name="expand">True</property>
 	  <property name="fill">True</property>
 	</packing>

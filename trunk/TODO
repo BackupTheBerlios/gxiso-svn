@@ -1,1 +1,3 @@
+- create a destination folder based on filename, if no name can be read in iso
+- cut destination folder into base folder and name
 * add gnomevfs support for reading iso
