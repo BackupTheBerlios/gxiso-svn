@@ -124,9 +124,9 @@ class FTPWriter:
 		try:
 			self.session = ftplib.FTP(self.ip,self.login,self.password)
 			self.chdir(self.base_folder)
-		except ftplib.all_errors, detail:
-			print str(detail)
-			raise ExtractError(_("<b>Cannot connect to xbox:\n"+detail[1]+"</b>\n\nIs the xbox FTP server running?\nVerify address, login and password."))
+		except ftplib.all_errors, details:
+			print str(details)
+			raise ExtractError(_("<b>Cannot connect to xbox:\n"+details[1]+"</b>\n\nIs the xbox FTP server running?\nVerify address, login and password."))
 		self.lock = thread.allocate_lock()
 
 	def quit(self):
@@ -136,10 +136,11 @@ class FTPWriter:
 		try:
 			self.session.storbinary("STOR %s" % filename, self)
 		except ftplib.error_reply, details:
-			pass
-			print _("warning stor '%s' (%s)") % (filename,details[1])
+			print repr(details)
+			print _("warning stor '%s' (%s)") % (filename,str(details))
 		except ftplib.all_errors, details:
-			print _("error stor '%s' (%s)") % (filename,details[1])
+			#print _("error stor '%s' (%s)") % (filename,str(details))
+			self.error = _("<b>Cannot write to xbox !</b>\n"+str(details))
 		self.lock.acquire()
 		self.buffer=None
 		self.lock.release()
@@ -148,16 +149,20 @@ class FTPWriter:
 	def open(self, filename):
 		self.buffer = ""
 		self.closing = False
+		self.error = None
 		
 		thread.start_new_thread(self.upload,(filename,))
 		self.filename = filename
-
 		
 	def write(self, buffer):
 
-		while len(self.buffer) > 0:
-			# wait buffer read
-			time.sleep(0.001)
+		try:
+			while len(self.buffer) > 0:
+				# wait buffer read
+				time.sleep(0.001)
+		except TypeError:
+			# an error ocurred
+			raise ExtractError(self.error)
 			
 		# append to buffer	
 		self.lock.acquire()
@@ -492,6 +497,7 @@ class DialogMain(Window):
 		# widgets we will connect to
 		self.ui_checkbutton_extract =\
 		self.ui_checkbutton_upload =\
+		self.ui_entry_xbox_folder =\
 		self.ui_entry_xbox_address =\
 		self.ui_entry_xbox_login =\
 		self.ui_entry_xbox_password =\
@@ -580,9 +586,14 @@ class DialogMain(Window):
 
 	def extract_xiso(self):
 		# get infos from ui
+		
+		drives = ["/c/","/e/","/f/","/g/"]
+		
 		filename = self.ui_entry_xiso.get_text()
 		local_folder = self.ui_entry_folder.get_text()
-		ftp_folder = "/g/tmp"
+		ftp_folder = drives[self.ui_combobox_xbox_drive.get_active()] + \
+			self.ui_entry_xbox_folder.get_text()
+
 		ftp_ip = self.ui_entry_xbox_address.get_text()
 		ftp_login = self.ui_entry_xbox_login.get_text()
 		ftp_password = self.ui_entry_xbox_password.get_text()
@@ -690,6 +701,7 @@ class DialogMain(Window):
 			self.get_iso_infos(dialog.get_filename())
 			if (self.xbe_name):
 				self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
+				self.ui_entry_xbox_folder.set_text(self.xbe_name)
 
 	def on_button_folder_browse_clicked(self, widget):
 		dialog = gtk.FileChooserDialog(_("Select Extract Folder"),None,
