@@ -16,22 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-    
+
 import os
-import sys
-import pdb
 import time
-import string
 import struct
-import re
 import thread
-import md5
+import ftplib
 import pygtk
 pygtk.require('2.0')
-import gobject
 import gtk
 import gtk.glade
-import gnome
 import gettext
 _=gettext.gettext
 
@@ -42,8 +36,6 @@ SEEK_CUR = 1
 SEEK_END = 2
 
 FILE_DIR = 0x10
-
-HEADER_SIGNATURE = "MICROSOFT*XBOX*MEDIA"
 
 def gtk_iteration():
 	while gtk.events_pending():
@@ -62,6 +54,7 @@ class ExtractError(Exception):
 def show_error(message):
 	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, 
 		gtk.BUTTONS_OK, message)
+	dialog.set_markup(message)
 	dialog.run()
 	dialog.hide()
 
@@ -118,7 +111,6 @@ class FileWriter:
 	def quit(self):
 		pass
 
-import ftplib
 
 class FTPWriter:
 	def __init__(self, ip, login, password, base_folder):
@@ -133,47 +125,62 @@ class FTPWriter:
 			self.session = ftplib.FTP(self.ip,self.login,self.password)
 			self.chdir(self.base_folder)
 		except ftplib.all_errors, detail:
-			raise ExtractError(_("Cannot connect to xbox:\n"+detail[1]+"\n\nIs the xbox FTP server running?\nVerify address, login and password."))
-			#raise
+			print str(detail)
+			raise ExtractError(_("<b>Cannot connect to xbox:\n"+detail[1]+"</b>\n\nIs the xbox FTP server running?\nVerify address, login and password."))
 		self.lock = thread.allocate_lock()
 
 	def quit(self):
 		self.session.quit()
 
+	def upload(self,filename):
+		try:
+			self.session.storbinary("STOR %s" % filename, self)
+		except ftplib.error_reply, details:
+			pass
+			print _("warning stor '%s' (%s)") % (filename,details[1])
+		except ftplib.all_errors, details:
+			print _("error stor '%s' (%s)") % (filename,details[1])
+		self.lock.acquire()
+		self.buffer=None
+		self.lock.release()
+
+
 	def open(self, filename):
 		self.buffer = ""
 		self.closing = False
-		#thread.start_new_thread(self.session.storbinary,("STOR %s" % filename, self))
-		self.file = file("/tmp/gxiso.tmp","wb")
+		
+		thread.start_new_thread(self.upload,(filename,))
 		self.filename = filename
+
 		
 	def write(self, buffer):
-		#print "write: %d bytes in buffer, adding %d bytes" % (len(self.buffer), len(buffer))
 
-		self.file.write(buffer)
-	
-		#while len(self.buffer) > 0:
+		while len(self.buffer) > 0:
 			# wait buffer read
-			#time.sleep(0.1)
+			time.sleep(0.001)
+			
 		# append to buffer	
-		
-		#self.lock.acquire()
-		#self.buffer += buffer
-		#self.lock.release()
+		self.lock.acquire()
+		self.buffer += buffer
+		self.lock.release()
 		
 	def close(self):
 		self.closing = True
 
-		self.file.close
-		self.file = file("/tmp/gxiso.tmp","rb")
+		while True:
+			# wait buffer write
+			wait = True
+			self.lock.acquire()
+			if self.buffer == None:
+				wait = False
+			self.lock.release()
+			if not wait:
+				break
+			time.sleep(0.001)
 
-		self.session.storbinary("STOR %s" % self.filename, self)
-
-		self.file.close()
 
 	def mkdir(self, name):
 		try:
-			#print "mkdir '%s'" % name
 			self.session.mkd(name)
 		except ftplib.error_reply:
 			pass
@@ -181,7 +188,6 @@ class FTPWriter:
 			print _("error mkdir '%s'") % name
 	def chdir(self, name):
 		try:
-			#print "chdir '%s'" % name
 			self.session.cwd(name)
 		except ftplib.error_reply:
 			pass
@@ -189,33 +195,24 @@ class FTPWriter:
 			print _("error chdir '%s'") % name
 
 	def read(self, size):
-		#print "read: %d bytes in buffer, removing %d bytes" % (len(self.buffer), size)
-		
-		buffer = self.file.read(size)
-		return buffer
-		
-		#while len(self.buffer) == 0:
+		# called by ftp storbinary
+		while True:
 			# wait buffer write
-			#time.sleep(0.1)
-			#if self.closing:
-				#return ""
-			
-		#self.lock.acquire()
-		#buffer = self.buffer[:size]
-		#self.buffer = self.buffer[size:]
-		#self.lock.release()
+			self.lock.acquire()
+			l = len(self.buffer)
+			self.lock.release()
+			if l > 0:
+				break
+			time.sleep(0.001)
+			if self.closing:
+				return ""
 
-		#return buffer
-		
-		
-	#import ftplib
-	#session = ftplib.FTP('192.168.0.6','xbox','xbox')
-	#test = Extract()
-	#test.file = open('gxiso.py','rb')
-	#session.cwd("/g/tmp")
-	#session.storbinary('STOR yop.py', test)  
-	#test.file.close()                                     
-	#session.quit()                                         
+		self.lock.acquire()
+		l = len(self.buffer)
+		buffer = self.buffer[:size]
+		self.buffer = self.buffer[size:]
+		self.lock.release()
+		return buffer
 	
 class FileAndFTPWriter:
 	def __init__(self, local_folder, ip, login, password, ftp_folder):
@@ -256,12 +253,12 @@ class XisoExtractor:
 		self.paused = False
 		self.canceled = False
 		self.error = None
+		self.active=True
 
 	def write_file_parse(self,filename,size,sector):
 		if filename == "default.xbe":
 			# search xbe real name
 			self.parse_xbe(sector)
-		pass
 
 	def write_file_real(self,filename,size,sector):
 	
@@ -273,8 +270,6 @@ class XisoExtractor:
 		buffer = "-"
 		try:
 			while buffer != "":
-				#time.sleep(1)
-				
 				readsize = min(size,BUFFER_SIZE)
 				buffer = self.iso.read(readsize)
 				self.writer.write(buffer);
@@ -295,7 +290,7 @@ class XisoExtractor:
 		name = self.iso.read(80)
 
 		self.xbe_name = ""
-		
+		# TODO: better solution for wide chars	
 		for i in range(80):
 			if name[i] != "\x00":
 				self.xbe_name += name[i]
@@ -326,6 +321,7 @@ class XisoExtractor:
 				self.browse_file(newsector)
 				self.writer.chdir("..")
 		else:
+			# write file
 			self.size  = self.size + filesize
 			self.write_file(filename,filesize,newsector);
 	
@@ -337,6 +333,7 @@ class XisoExtractor:
 	def extract(self,iso_name):
 		# parse and extract iso
 	
+		self.active=True
 		saved_folder = os.getcwd()
 		try:
 			self.writer.init()
@@ -346,7 +343,7 @@ class XisoExtractor:
 			os.chdir(saved_folder)
 			self.error = details.message
 		os.chdir(saved_folder)
-
+		self.active=False
 
 	def parse(self,iso_name):
 		# only parse iso
@@ -364,16 +361,17 @@ class XisoExtractor:
 		try:
 			self.iso = open(iso_name, 'rb');
 		except IOError:
-			return "Cannot open '"+iso_name+"'"
+			return _("<b>Cannot open '%s'</b>" % iso_name)
 
+		signature = "MICROSOFT*XBOX*MEDIA"
 
 		# skip beggining
 		self.iso.seek(0x10000,SEEK_SET)
 		
 		# read and verify header
 		header = self.iso.read(0x14)
-		if header != HEADER_SIGNATURE:
-			return "Not a valid xbox iso image"
+		if header != signature:
+			return _("<b>Not a valid xbox iso image</b>")
 
 		# read root sector address
 		root_sector, = read_unpack(self.iso, "<L")
@@ -383,8 +381,8 @@ class XisoExtractor:
 		
 		# read and verify header
 		header = self.iso.read(0x14)
-		if header != HEADER_SIGNATURE:
-			return "Not a valid xbox iso image"
+		if header != signature:
+			return _("<b>Not a valid xbox iso image</b>")
 
 		# and start extracting files
 		self.browse_file(root_sector)
@@ -426,6 +424,7 @@ class DialogProgress(Window):
 		self.canceled = False
 		self.paused = False
 		self.pausetime = 0
+		self.current_file = ""
 
 	def stop(self):
 		self.ui_dialog_progress.hide_all()
@@ -574,7 +573,7 @@ class DialogMain(Window):
 			self.ui_label_iso_infos.set_markup("<b>not a valid xbox iso image!</b>")
 		else:
 			self.xbe_name = xiso.xbe_name
-			self.ui_label_iso_infos.set_markup("Title name: <b>%s</b> (%d MB)" %
+			self.ui_label_iso_infos.set_markup(_("Title name: <b>%s</b> (%d MB)") %
 			(self.xbe_name, os.path.getsize(filename)/(1024*1024)) )
 			if self.ui_entry_folder.get_text() != "":
 				self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
@@ -601,7 +600,7 @@ class DialogMain(Window):
 			gtk_iteration()
 			show_error(error)
 			return
-		size = xiso.size
+		total_size = xiso.size
 		total_files = xiso.files
 
 		# select writer plugin
@@ -619,7 +618,7 @@ class DialogMain(Window):
 			operation = _("Extracting and Uploading")
 		if not extract and not upload:
 			# what are we doing here ? :)
-			progress.hide()
+			progress.stop()
 			return
 
 		# and start the extraction thread
@@ -627,32 +626,38 @@ class DialogMain(Window):
 			progress.set_current_operation(_("Connecting to ftp://%s@%s")%
 				(ftp_login, ftp_ip) )
 		progress.start()
+		gtk_iteration()
+
 		xiso = XisoExtractor(writer)
 		thread.start_new_thread(xiso.extract, (filename,))
-		#xiso.extract(filename)
 
-		while (xiso.write_position < size) and (not xiso.canceled) and (not xiso.error):
-	
-	
-			fraction = float(xiso.write_position)/float(size)
-	
+		while xiso.active:
+		
 			if xiso.write_position == 0:
+				# still not writing
 				progress.pulse()
 			else:
-				progress.set_current_operation(operation)
+				if operation:
+					# display the current mode, once
+					progress.set_current_operation(operation)
+					operation = None
+				# update progress
+				fraction = float(xiso.write_position)/float(total_size)
 				progress.set_current_file(xiso.current_file, xiso.files, total_files)
 				progress.set_fraction(fraction)
-
+	
+			# handle events
 			xiso.canceled = progress.canceled
 			xiso.paused = progress.paused
-
+			
+			# and let our working thread be called
 			gtk_iteration()
 			time.sleep(0.1)
 
 		if xiso.error:
 			show_error(xiso.error)
 
-		print _("done, %.2f MiB/s)") % (size/(time.time()-progress.starttime)/(1024*1024))
+		print "OK! (%.2f MiB/s)" % (total_size/(time.time()-progress.starttime)/(1024*1024))
 		progress.stop()
 
 	def on_button_defaults_clicked(self, widget):
