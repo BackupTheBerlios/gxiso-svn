@@ -1,19 +1,15 @@
-# English translation of gxiso.
-# Copyright (C) 2005 THE gxiso'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the gxiso package.
-# <>, 2005.
-# , fuzzy
-# <>, 2005.
-# 
+# Copyright (C) 2005 THE gXiso'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the gXiso package.
+# Roberto Inzerillo <robicd@gmx.net>, 2005.
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: gxiso 0.9\n"
+"Project-Id-Version: gXiso 0.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2005-03-30 22:00+0200\n"
-"PO-Revision-Date: 2005-03-30 16:48+0200\n"
-"Last-Translator: Gautier Portet <kassoulet@gmail.com>\n"
-"Language-Team: French <en@li.org>\n"
+"PO-Revision-Date: 2005-03-30 18:55+0100\n"
+"Last-Translator: Roberto Inzerillo <robicd@gmx.net>\n"
+"Language-Team: Italian <tp@lists.linux.it>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,7 +20,7 @@ msgid ""
 "<b>Cannot create folder on xbox:</b>\n"
 "%s"
 msgstr ""
-"<b>Impossible de créer le répertoire sur la xbox:</b>\n"
+"<b>Impossibile creare la directory sulla Xbox:</b>\n"
 "%s"
 
 #: src/gxiso.py:151
@@ -32,93 +28,93 @@ msgid ""
 "<b>Cannot connect to xbox:\n"
 "</b>\n"
 msgstr ""
-"<b>Impossible de se connecter à la xbox:\n"
+"<b>Impossibile connettersi alla Xbox:\n"
 "</b>\n"
 
 #: src/gxiso.py:170
 msgid "<b>Cannot write to xbox:</b>\n"
-msgstr "<b>Impossible d'écrire sur la xbox:</b>\n"
+msgstr "<b>Impossible scrivere sulla Xbox:</b>\n"
 
 #: src/gxiso.py:405
 #, python-format
 msgid "<b>Cannot open '%s'</b>"
-msgstr "<b>Impossible d'ouvrir '%s'</b>"
+msgstr "<b>Impossible aprire \"%s\"</b>"
 
 #: src/gxiso.py:413
 msgid "<b>Cannot read iso (too big ?)</b>"
-msgstr "<b>Impossible de lire l'iso en entier (trop gros ?)</b>"
+msgstr "<b>Impossible leggere la ISO (troppo grande ?)</b>"
 
 #: src/gxiso.py:421 src/gxiso.py:432
 msgid "<b>Not a valid xbox iso image</b>"
-msgstr "<b>Cette image xbox n'est pas valide</b>"
+msgstr "<b>Non è una valida immagine Xbox</b>"
 
 #: src/gxiso.py:500
 msgid "less than one minute left."
-msgstr "moins d'une minute restante."
+msgstr "meno di un minuto alla fine."
 
 #: src/gxiso.py:502
 msgid "about one minute left."
-msgstr "environ une minute restante."
+msgstr "un minuto circa alla fine."
 
 #: src/gxiso.py:504
 #, python-format
 msgid "about %d minutes left."
-msgstr "environ %d minutes restantes."
+msgstr "mancano circa %d minuti."
 
 #: src/gxiso.py:507
 msgid "Paused"
-msgstr "Pausé"
+msgstr "In pausa"
 
 #: src/gxiso.py:509
 #, python-format
 msgid "File %d/%d, %s"
-msgstr "Fichier %d/%d, %s"
+msgstr "File %d/%d, %s"
 
 #: src/gxiso.py:632
 #, python-format
 msgid "Title name: <b>%s</b> (%d MB)"
-msgstr "Nom du titre: <b>%s</b> (%d MB)"
+msgstr "Nome del titolo: <b>%s</b> (%d MB)"
 
 #: src/gxiso.py:674
 msgid "Parsing"
-msgstr "Analyse"
+msgstr "Analisi in corso"
 
 #: src/gxiso.py:694
 msgid "Extracting"
-msgstr "Extraction"
+msgstr "Estrazione in corso"
 
 #: src/gxiso.py:697
 msgid "Uploading"
-msgstr "Transfert"
+msgstr "Upload in corso"
 
 #: src/gxiso.py:700
 msgid "Extracting and Uploading"
-msgstr "Extraction et Transfert"
+msgstr "Estrazione e upload in corso"
 
 #: src/gxiso.py:708
 #, python-format
 msgid "Connecting to ftp://%s@%s"
-msgstr "Connexion à ftp://%s@%s"
+msgstr "Connessione a ftp://%s@%s in corso"
 
 #: src/gxiso.py:740
 msgid ""
 "<b>Transfer timeout</b>\n"
 "The xbox is not responding"
 msgstr ""
-"<b>Dépassement du délai d'attente</b>\n"
-"La xbox ne répond pas."
+"<b>Trasferimento in timeout</b>\n"
+"La Xbox non risponde."
 
 #: src/gxiso.py:765
 msgid "Please select an iso to read."
-msgstr "Selectionnez un iso !"
+msgstr "Selezionare una ISO da leggere."
 
 #: src/gxiso.py:771
 msgid "Open Xbox Iso"
-msgstr "Ouvrir iso Xbox"
+msgstr "Apri una ISO Xbox"
 
 #: src/gxiso.py:798
 msgid "Select Extract Folder"
-msgstr "Selectionnez le répertoire où extraire"
+msgstr "Selezionare una directory per l'estrazione"
 
 #: src/gxiso.py:871
 #, python-format
@@ -128,42 +124,43 @@ msgid ""
 "\n"
 "<tt><small>%s</small></tt>"
 msgstr ""
-"<big><b>Une erreur de programmation à été détecté durant l'execution de ce "
-"programme</b></big>\n"
+"<big><b>Durante l'esecuzione di questo programma è stato identificato un "
+"errore di programmazione.</b></big>\n"
 "\n"
 "<tt><small>%s</small></tt>"
 
 #: src/gxiso.py:875
 msgid "Bug Detected"
-msgstr "Bogue détecté"
+msgstr "Bug identificato"
 
+# I'm not shure this is what the original programmer meant with  'please file a bug'?
 #: src/gxiso.py:902
 msgid "Cannot find data folder, please file a bug"
-msgstr "Impossible de trouver le répertoire de données."
+msgstr "Impossibile trovare la directory dei dati, redigere un report del bug"
 
 #: src/gxiso.glade:51
 msgid "Reset values to typical defaults"
-msgstr "Reviens aux valeurs par défaut"
+msgstr "Reimposta i valori di default"
 
 #: src/gxiso.glade:97
 msgid "Defaults"
-msgstr "Valeurs par défaut"
+msgstr "Default"
 
 #: src/gxiso.glade:124
 msgid "Start extraction/upload"
-msgstr "Démarre l'extraction et/ou le tranfert"
+msgstr "Inizia l'estrazione/upload"
 
 #: src/gxiso.glade:170
 msgid "_Go"
-msgstr "_Go"
+msgstr "_Vai"
 
 #: src/gxiso.glade:258
 msgid "The iso's filename"
-msgstr "Le nom de l'iso"
+msgstr "Il nome del file ISO"
 
 #: src/gxiso.glade:279 src/gxiso.glade:426
 msgid "Browse"
-msgstr "Naviguer"
+msgstr "Sfoglia"
 
 #: src/gxiso.glade:327
 msgid "<b>Xiso</b>"
@@ -171,35 +168,35 @@ msgstr "<b>Xiso</b>"
 
 #: src/gxiso.glade:378
 msgid "Do you want to extract to the local disk ?"
-msgstr "Voulez-vous extraire le contenu dans le disque local ?"
+msgstr "Vuoi estrarre su un disco locale?"
 
 #: src/gxiso.glade:380
 msgid "Save to local folder"
-msgstr "Sauver dans un répertoire local"
+msgstr "Salva in una directory locale"
 
 #: src/gxiso.glade:405
 msgid "The folder where you want the iso to be extracted"
-msgstr "Le répertoire où vous voulez extraire le contenu"
+msgstr "La directory dove vuoi che la ISO venga estratta"
 
 #: src/gxiso.glade:453
 msgid "<b>Extract</b>"
-msgstr "<b>Extraire</b>"
+msgstr "<b>Estrai</b>"
 
 #: src/gxiso.glade:504
 msgid "Do you want to send the iso contents to an xbox ?"
-msgstr "Voulez-vous envoyer le contenu vers une Xbox ?"
+msgstr "Vuoi trasferire il contenuto della ISO verso una Xbox?"
 
 #: src/gxiso.glade:506
 msgid "Upload to Xbox (via FTP)"
-msgstr "Envoyer a la Xbox (via FTP)"
+msgstr "Upload verso una Xbox (via FTP)"
 
 #: src/gxiso.glade:538
 msgid "Address"
-msgstr "Adresse"
+msgstr "Indirizzo"
 
 #: src/gxiso.glade:559
 msgid "The IP address of the Xbox (typically 192.168.0.6)"
-msgstr "L'adresse IP de la Xbox (en général 192.168.0.6)"
+msgstr "L'indirizzo IP della Xbox (in genere è 192.168.0.6)"
 
 #: src/gxiso.glade:593
 msgid "Login"
@@ -207,7 +204,7 @@ msgstr "Login"
 
 #: src/gxiso.glade:614
 msgid "The login for the Xbox's FTP server"
-msgstr "Le login sur le serveur FTP de la Xbox"
+msgstr "Il login per il server FTP della Xbox"
 
 #: src/gxiso.glade:634
 msgid "Password"
@@ -215,28 +212,28 @@ msgstr "Password"
 
 #: src/gxiso.glade:655
 msgid "The password for the Xbox's FTP server"
-msgstr "Le mot de passe du serveur FTP de la Xbox"
+msgstr "La password del server FTP della Xbox"
 
 #: src/gxiso.glade:689
 msgid "Drive"
-msgstr "Disque"
+msgstr "Disco"
 
 #: src/gxiso.glade:725
 msgid "Folder"
-msgstr "Répertoire"
+msgstr "Directory"
 
 #: src/gxiso.glade:746
 msgid "The base folder on the Xbox (typically \"games\")"
-msgstr "Le répertoire de base sur la Xbox (en général \"games\")"
+msgstr "La directory base sulla Xbox (in genere è \"games\")"
 
 #: src/gxiso.glade:784
 msgid "<b>Upload</b>"
-msgstr "<b>Transfert</b>"
+msgstr "<b>Upload</b>"
 
 #: src/gxiso.glade:820
 msgid "gXiso is working"
-msgstr "gXiso, travail en cours"
+msgstr "gXiso stà lavorando"
 
 #: src/gxiso.glade:863
 msgid "_Pause"
-msgstr "_Pause"
+msgstr "_Pausa"

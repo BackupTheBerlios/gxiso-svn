@@ -8,7 +8,7 @@ from distutils.core import setup, Extension
 
 PACKAGE="gxiso"
 VERSION=1.3
-ALL_LINGUAS=["fr"]
+ALL_LINGUAS=["fr", "it"]
 
 #hack hack HACK !!!
 #maybe I will just use autoconf...
