@@ -1,4 +1,17 @@
 # this file is generated from the subversion log. do not edit!
+2005-03-30  Gautier Portet <kassoulet@gmail.com>
+
+	* added italian translation (thanks Roberto)
+
+2005-03-30  Gautier Portet <kassoulet@gmail.com>
+
+	* fr translation update
+
+2005-03-30  Gautier Portet <kassoulet@gmail.com>
+
+	* more fr translation fixes
+	* changelog generated from svn log
+
 2005-03-14  Gautier Portet <kassoulet@gmail.com>
 
 	* added an error when we cannot read all the iso file
