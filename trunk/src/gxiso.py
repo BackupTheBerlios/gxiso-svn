@@ -20,6 +20,7 @@
 import os
 import sys
 import time
+import re
 import struct
 import thread
 import ftplib
@@ -67,6 +68,66 @@ def log(message):
 	print message
 	
 total_size=0
+
+import bz2
+import gzip
+
+class ArchiveExtractor:
+	def isValid(self, filename):
+		result = self.pattern.search(filename.lower())
+		if result:
+			print "archive format:", self.name
+			return True
+		return False
+	
+class BZip2Extractor (ArchiveExtractor):
+	def __init__(self):
+		self.name = "bzip2"
+		self.pattern = re.compile(r".*\.bz2")
+		
+	def extract(self, filename):
+		output = os.tmpnam()
+		print "writing:", output
+		f = file(output,"wb")
+		archive = bz2.BZ2File(filename, "r", 0)
+		buffer="1"
+		while buffer:
+			buffer = archive.read(BUFFER_SIZE)
+			f.write(buffer)
+		archive.close()
+		f.close()
+		print "done."
+		return output
+
+class GZipExtractor (ArchiveExtractor):
+	def __init__(self):
+		self.name = "gzip"
+		self.pattern = re.compile(r".*\.gz")
+		
+	def extract(self, filename):
+		output = os.tmpnam()
+		print "writing:", output
+		f = file(output,"wb")
+		archive = gzip.GzipFile(filename, "r", 0)
+		buffer="1"
+		while buffer:
+			buffer = archive.read(BUFFER_SIZE)
+			f.write(buffer)
+		archive.close()
+		f.close()
+		print "done."
+		return output
+
+extractors = (
+	BZip2Extractor(),
+	GZipExtractor(),
+)
+
+def extractor_factory(filename):
+	for extractor in extractors:
+		if extractor.isValid(filename):
+			return extractor
+	return None
 
 class NullWriter:
 	# do nothing writer
@@ -400,7 +461,7 @@ class XisoExtractor:
 
 		log("opening xiso: "+iso_name);
 		try:
-			self.iso = open(iso_name, 'rb');
+			self.iso = file(iso_name, "rb");
 		except IOError:
 			return _("<b>Cannot open '%s'</b>") % iso_name
 
@@ -645,8 +706,12 @@ class DialogMain(Window):
 			name = name.replace(f," ")
 		return name
 
+	def extract_archive(self, extractor, filename):
+		self.extracted_filename = extractor.extract(filename)
+		self.extracting = False
 
 	def extract_xiso(self):
+		self.extracted_filename = None
 	
 		# get infos from ui
 		drives = ["/c/","/e/","/f/","/g/"]
@@ -671,7 +736,24 @@ class DialogMain(Window):
 		
 		# init progress dialog
 		progress = DialogProgress()
+		progress.set_current_operation(_("Extracting Archive"))
+		progress.set_current_file("This can take several minutes", 0, 0)
+		gtk_iteration()
+
+		extractor = extractor_factory(filename)
+		if extractor:
+			self.extracting = True
+			#self.extract_archive(extractor,filename)
+			thread.start_new_thread(self.extract_archive, (extractor,filename))
+
+			while self.extracting:
+				progress.pulse()
+				gtk_iteration()
+				time.sleep(0.1)
+			filename = self.extracted_filename
+
 		progress.set_current_operation(_("Parsing"))
+		progress.set_current_file("",0,0)
 		gtk_iteration()
 
 		# parse info from xiso
@@ -736,7 +818,7 @@ class DialogMain(Window):
 					time_inactive += 0.1
 				else:
 					time_inactive = 0
-				if time_inactive > 5.0:
+				if time_inactive > 5.0 and not xiso.paused:
 					xiso.error = _("<b>Transfer timeout</b>\nThe xbox is not responding")
 					xiso.active = False
 				previous_position = xiso.write_position
@@ -752,8 +834,13 @@ class DialogMain(Window):
 		if xiso.error:
 			show_error(xiso.error)
 		else:
-			log( "done! (%.2f MiB/s)" % (total_size/(time.time()-progress.starttime)/(1024*1024)))
+			log( "done! (in %ds, %.2f MiB/s)" % (time.time()-progress.starttime,total_size/(time.time()-progress.starttime)/(1024*1024)))
 		progress.stop()
+		
+		# remove tmp file
+		if self.extracted_filename:
+			os.unlink(self.extracted_filename)
+			self.extracted_filename = None
 
 	def on_button_defaults_clicked(self, widget):
 		self.settings = self.default_settings
@@ -774,6 +861,8 @@ class DialogMain(Window):
 
 		filter = gtk.FileFilter()
 		filter.add_pattern("*.iso")
+		filter.add_pattern("*.gz")
+		filter.add_pattern("*.bz2")
 
 		dialog.set_filter(filter)
 		#dialog.set_local_only(False)

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gXiso 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-03-31 01:28+0200\n"
+"POT-Creation-Date: 2005-03-31 01:32+0200\n"
 "PO-Revision-Date: 2005-03-30 18:55+0100\n"
 "Last-Translator: Roberto Inzerillo <robicd@gmx.net>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -46,7 +46,7 @@ msgstr "<b>Impossible leggere la ISO (troppo grande ?)</b>"
 
 #: src/gxiso.py:421 src/gxiso.py:432
 msgid "<b>Not a valid xbox iso image</b>"
-msgstr "<b>Non è una valida immagine Xbox</b>"
+msgstr "<b>Non Ã¨ una valida immagine Xbox</b>"
 
 #: src/gxiso.py:500
 msgid "less than one minute left."
@@ -124,7 +124,7 @@ msgid ""
 "\n"
 "<tt><small>%s</small></tt>"
 msgstr ""
-"<big><b>Durante l'esecuzione di questo programma è stato identificato un "
+"<big><b>Durante l'esecuzione di questo programma Ã¨ stato identificato un "
 "errore di programmazione.</b></big>\n"
 "\n"
 "<tt><small>%s</small></tt>"
@@ -196,7 +196,7 @@ msgstr "Indirizzo"
 
 #: src/gxiso.glade:559
 msgid "The IP address of the Xbox (typically 192.168.0.6)"
-msgstr "L'indirizzo IP della Xbox (in genere è 192.168.0.6)"
+msgstr "L'indirizzo IP della Xbox (in genere Ã¨ 192.168.0.6)"
 
 #: src/gxiso.glade:593
 msgid "Login"
@@ -224,7 +224,7 @@ msgstr "Directory"
 
 #: src/gxiso.glade:746
 msgid "The base folder on the Xbox (typically \"games\")"
-msgstr "La directory base sulla Xbox (in genere è \"games\")"
+msgstr "La directory base sulla Xbox (in genere Ã¨ \"games\")"
 
 #: src/gxiso.glade:784
 msgid "<b>Upload</b>"
@@ -232,8 +232,10 @@ msgstr "<b>Upload</b>"
 
 #: src/gxiso.glade:820
 msgid "gXiso is working"
-msgstr "gXiso stà lavorando"
+msgstr "gXiso stÃ  lavorando"
 
 #: src/gxiso.glade:863
 msgid "_Pause"
 msgstr "_Pausa"
+
+
