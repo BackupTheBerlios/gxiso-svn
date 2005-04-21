@@ -210,7 +210,13 @@ class FTPWriter:
 				details = details[1]
 				
 			raise ExtractError(_("<b>Cannot connect to xbox:\n</b>\n"+str(details)))
-			
+
+		try:
+			log("Disabling FREEROOTSPACE on Avalaunch")
+			self.session.sendcmd("SITE FREEROOTSPACEDISABLE")
+		except ftplib.all_errors, details:
+			log("  Avalaunch is not here.")
+
 		# we must lock the buffer since its shaded between 2 threads
 		self.lock = thread.allocate_lock()
 
@@ -404,7 +410,7 @@ class XisoExtractor:
 		add_list = []
 		
 		if self.canceled: 
-			return None
+			return add_list
 		
 		# jump to sector
 		self.iso.seek(sector*2048+offset, SEEK_SET)
