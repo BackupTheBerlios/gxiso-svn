@@ -389,17 +389,22 @@ class XisoExtractor:
 		name = self.iso.read(80)
 
 		self.xbe_name = ""
+		
+		if not name:
+			return
+
 		# TODO: better solution for wide chars	
-		for i in range(80):
+		for i in range(len(name)):
 			if name[i] != "\x00":
 				self.xbe_name += name[i]
 		
-
-	def browse_file(self, sector, offset=0):
+	def browse_file_internal(self, (sector, offset)):
 		# browse an iso file entry
 		
+		add_list = []
+		
 		if self.canceled: 
-			return
+			return None
 		
 		# jump to sector
 		self.iso.seek(sector*2048+offset, SEEK_SET)
@@ -419,17 +424,26 @@ class XisoExtractor:
 				self.writer.mkdir(filename)
 				if not self.writer.chdir(filename):
 					raise ExtractError("<b>Cannot change to directory:</b>%s"%filename)
-				self.browse_file(newsector)
+				add_list.append( (newsector, 0) )
 				self.writer.chdir("..")
 		else:
 			# write file
 			self.size  = self.size + filesize
-			self.write_file(filename,filesize,newsector);
+			self.write_file(filename, filesize, newsector);
 	
 		if rtable > 0:
-			self.browse_file(sector,rtable*4)
+			add_list.append( (sector, rtable*4) )
 		if ltable > 0:
-			self.browse_file(sector,ltable*4)
+			add_list.append( (sector, ltable*4) )
+			
+		return add_list
+
+	def browse_file(self, sector):
+		file_list = [ (sector, 0) ]
+		
+		while file_list:
+			current_file = file_list.pop()
+			file_list += self.browse_file_internal( current_file )
 
 	def extract(self,iso_name):
 		# parse and extract iso
