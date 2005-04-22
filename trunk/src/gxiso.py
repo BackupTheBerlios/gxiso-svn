@@ -42,7 +42,7 @@ FILE_DIR = 0x10
 def gtk_iteration():
 	# allow GTK to process events outside mainloop
 	while gtk.events_pending():
-		gtk.main_iteration(gtk.FALSE)
+		gtk.main_iteration(False)
 
 def read_unpack(file, format):
 	# read and unpack a structure as in struct.unpack
@@ -434,8 +434,12 @@ class XisoExtractor:
 				self.writer.chdir("..")
 		else:
 			# write file
-			self.size  = self.size + filesize
-			self.write_file(filename, filesize, newsector);
+			if filename:
+				self.size  = self.size + filesize
+				self.write_file(filename, filesize, newsector);
+			else:
+				log("warning: file without filename (offset:%d ,size:%d)" % \
+						(newsector, filesize) )
 	
 		if rtable > 0:
 			add_list.append( (sector, rtable*4) )
@@ -838,7 +842,7 @@ class DialogMain(Window):
 					time_inactive += 0.1
 				else:
 					time_inactive = 0
-				if time_inactive > 5.0 and not xiso.paused:
+				if upload and time_inactive > 5.0 and not xiso.paused:
 					xiso.error = _("<b>Transfer timeout</b>\nThe xbox is not responding")
 					xiso.active = False
 				previous_position = xiso.write_position
@@ -881,6 +885,7 @@ class DialogMain(Window):
 
 		filter = gtk.FileFilter()
 		filter.add_pattern("*.iso")
+		filter.add_pattern("*.ISO")
 		filter.add_pattern("*.gz")
 		filter.add_pattern("*.bz2")
 
