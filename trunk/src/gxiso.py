@@ -432,7 +432,7 @@ class XisoExtractor:
 					# browse folder
 					self.writer.mkdir(filename)
 					if not self.writer.chdir(filename):
-						raise ExtractError("<b>Cannot change to directory:</b>%s"%filename)
+						raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
 					self.browse_folder( newsector, 0 )
 					self.writer.chdir("..")
 			else:
