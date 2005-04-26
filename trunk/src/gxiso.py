@@ -404,56 +404,55 @@ class XisoExtractor:
 			if name[i] != "\x00":
 				self.xbe_name += name[i]
 		
-	def browse_file_internal(self, (sector, offset)):
-		# browse an iso file entry
+	def browse_folder(self, sector, offset):
+		# browse an iso folder entry
 		
-		add_list = []
-		
-		if self.canceled: 
-			return add_list
-		
-		# jump to sector
-		self.iso.seek(sector*2048+offset, SEEK_SET)
-	
-		# read file header
-		ltable, rtable, newsector, filesize, attributes, filename_size \
-		= read_unpack(self.iso, "<HHLLBB")
-		
-		# read file name
-		filename = self.iso.read(filename_size)
-		
-		self.files = self.files + 1
-		
-		if attributes & FILE_DIR > 0:
-			if filename_size > 0:
-				# browse folder
-				self.writer.mkdir(filename)
-				if not self.writer.chdir(filename):
-					raise ExtractError("<b>Cannot change to directory:</b>%s"%filename)
-				add_list.append( (newsector, 0) )
-				self.writer.chdir("..")
-		else:
-			# write file
-			if filename:
-				self.size  = self.size + filesize
-				self.write_file(filename, filesize, newsector);
-			else:
-				log("warning: file without filename (offset:%d ,size:%d)" % \
-						(newsector, filesize) )
-	
-		if rtable > 0:
-			add_list.append( (sector, rtable*4) )
-		if ltable > 0:
-			add_list.append( (sector, ltable*4) )
-			
-		return add_list
+		file_list = [ (sector, offset) ]
 
-	def browse_file(self, sector):
-		file_list = [ (sector, 0) ]
-		
 		while file_list:
-			current_file = file_list.pop()
-			file_list += self.browse_file_internal( current_file )
+			sector, offset = file_list.pop()
+		
+			if self.canceled: 
+				return
+			
+			# jump to sector
+			self.iso.seek(sector*2048+offset, SEEK_SET)
+		
+			# read file header
+			ltable, rtable, newsector, filesize, attributes, filename_size \
+			= read_unpack(self.iso, "<HHLLBB")
+			
+			# read file name
+			filename = self.iso.read(filename_size)
+			
+			self.files = self.files + 1
+	
+			if attributes & FILE_DIR > 0:
+				if filename_size > 0:
+					# browse folder
+					self.writer.mkdir(filename)
+					if not self.writer.chdir(filename):
+						raise ExtractError("<b>Cannot change to directory:</b>%s"%filename)
+					self.browse_folder( newsector, 0 )
+					self.writer.chdir("..")
+			else:
+				# write file
+				if filename:
+					self.size  = self.size + filesize
+					self.write_file(filename, filesize, newsector);
+				else:
+					log("warning: file without filename (offset:%d ,size:%d)" % \
+							(newsector, filesize) )
+		
+			if rtable > 0:
+				file_list.append( (sector, rtable*4) )
+			if ltable > 0:
+				file_list.append( (sector, ltable*4) )
+		return
+
+	def browse_folders(self, sector):
+		
+		self.browse_folder(sector, 0)
 
 	def extract(self,iso_name):
 		# parse and extract iso
@@ -517,7 +516,7 @@ class XisoExtractor:
 			return _("<b>Not a valid xbox iso image</b>")
 
 		# and start extracting files
-		self.browse_file(root_sector)
+		self.browse_folders(root_sector)
 
 		return None
 

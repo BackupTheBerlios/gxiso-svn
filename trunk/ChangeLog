@@ -1,101 +1,121 @@
 # this file is generated from the subversion log. do not edit!
-2005-03-31  Gautier Portet <kassoulet@gmail.com>
+2005-04-21  Gautier Portet <kassoulet gmail com>
 
-2005-03-30  Gautier Portet <kassoulet@gmail.com>
+		* Added disabling of FREEROOTSPACE on Avalaunch when
+		  login.
+		* Fixed a regression which caused a crash when canceling.
+
+2005-04-21  Gautier Portet <kassoulet gmail com>
+
+		* changed browse_file to use a list and a loop
+		  instead of recursion, to fix a stack overflow
+		  (#3832)
+
+2005-04-09  Gautier Portet <kassoulet gmail com>
+
+		* added support for extracting iso from .gz and .bz2
+		  files.
+		  warning: it extract the iso in a temporary file, so
+		  be sure to have enough diskplace.
+		* fixed pause: not longer detected as a timeout.
+
+2005-03-31  Gautier Portet <kassoulet gmail com>
+
+2005-03-30  Gautier Portet <kassoulet gmail com>
 
 	* added italian translation (thanks Roberto)
 
-2005-03-30  Gautier Portet <kassoulet@gmail.com>
+2005-03-30  Gautier Portet <kassoulet gmail com>
 
 	* fr translation update
 
-2005-03-30  Gautier Portet <kassoulet@gmail.com>
+2005-03-30  Gautier Portet <kassoulet gmail com>
 
 	* more fr translation fixes
 	* changelog generated from svn log
 
-2005-03-14  Gautier Portet <kassoulet@gmail.com>
+2005-03-14  Gautier Portet <kassoulet gmail com>
 
 	* added an error when we cannot read all the iso file
 	  this is mainly caused by 2Gb+ file when the (network) filesystem
 	  cannot handle such big files.
 	* set FTP mode to active, since EvoX don't support passive mode
 
-2005-03-05  Gautier Portet <kassoulet@gmail.com>
+2005-03-05  Gautier Portet <kassoulet gmail com>
 
 	fixed unhandled exception when canceling upload
 
-2005-03-05  Gautier Portet <kassoulet@gmail.com>
+2005-03-05  Gautier Portet <kassoulet gmail com>
 
 	changed transfer mode from PASV to PORT, as EvolutionX don't seems to support it
 
-2005-02-23  Gautier Portet <kassoulet@gmail.com>
+2005-02-23  Gautier Portet <kassoulet gmail com>
 
-2005-02-20  Gautier Portet <kassoulet@gmail.com>
+2005-02-20  Gautier Portet <kassoulet gmail com>
 
 	fixed case probleme with default.xbe
 
-2005-02-18  Gautier Portet <kassoulet@gmail.com>
+2005-02-18  Gautier Portet <kassoulet gmail com>
 
 	fixed charsets for translation
 	dest folder is now a base folder, saved in settings (simplier)
 	fixed empty destination folder when no name present in iso
 
-2005-02-12  Gautier Portet <kassoulet@gmail.com>
+2005-02-12  Gautier Portet <kassoulet gmail com>
 
 	*finally* got gettext to work :/
 	fixed some translation issues
 	added missing POTFILES.in in dist
 
-2005-01-26  Gautier Portet <kassoulet@gmail.com>
+2005-01-26  Gautier Portet <kassoulet gmail com>
 
 	fixed translation system, gettext is called now :)
 
-2005-01-26  Gautier Portet <kassoulet@gmail.com>
+2005-01-26  Gautier Portet <kassoulet gmail com>
 
 	removed forgotten debug line
 
-2005-01-26  Gautier Portet <kassoulet@gmail.com>
+2005-01-26  Gautier Portet <kassoulet gmail com>
 
 	Translation system
 	setup.py fixed
 	data folder use
 
-2005-01-20  Gautier Portet <kassoulet@gmail.com>
+2005-01-20  Gautier Portet <kassoulet gmail com>
 
-2005-01-20  Gautier Portet <kassoulet@gmail.com>
+2005-01-20  Gautier Portet <kassoulet gmail com>
 
 	cleanups
 	started packaging system
 
-2005-01-20  Gautier Portet <kassoulet@gmail.com>
+2005-01-20  Gautier Portet <kassoulet gmail com>
 
 	cleanups
 
-2005-01-19  Gautier Portet <kassoulet@gmail.com>
+2005-01-19  Gautier Portet <kassoulet gmail com>
 
 	added tranfer timeout detection
 	fixed error displays
 	fixed absence of deconnection
 
-2005-01-18  Gautier Portet <kassoulet@gmail.com>
+2005-01-18  Gautier Portet <kassoulet gmail com>
 
 	added message dialog on error when uploading
 
-2005-01-18  Gautier Portet <kassoulet@gmail.com>
+2005-01-18  Gautier Portet <kassoulet gmail com>
 
 	buffered transfer
 	and many fixes
 
-2005-01-15  Gautier Portet <kassoulet@gmail.com>
+2005-01-15  Gautier Portet <kassoulet gmail com>
 
 	many improvements
 
-2005-01-14  Gautier Portet <kassoulet@gmail.com>
+2005-01-14  Gautier Portet <kassoulet gmail com>
 
 	initial commit
 
-2005-01-14  Gautier Portet <kassoulet@gmail.com>
+2005-01-14  Gautier Portet <kassoulet gmail com>
 
 ;; Local Variables:
 ;; coding: utf-8
