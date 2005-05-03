@@ -26,7 +26,9 @@ import thread
 import ftplib
 import socket
 import pygtk
+
 pygtk.require('2.0')
+	
 import gtk
 import gtk.glade
 import gettext
@@ -66,7 +68,43 @@ def show_error(message):
 def log(message):
 	# display a log message on stdout
 	print message
+
+
+# use FileChooser or FileSelection ?
+try:
+	dir(gtk.FileChooserDialog)
+
+	def CreateFileChooser(title="", patterns=()):
 	
+		dialog = gtk.FileChooserDialog(title, None,
+			action=gtk.FILE_CHOOSER_ACTION_OPEN, buttons=(gtk.STOCK_CANCEL,
+			gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+
+		filter = gtk.FileFilter()
+		for pattern in patterns:
+			filter.add_pattern(pattern)
+		dialog.set_filter(filter)
+		#dialog.set_local_only(False)
+		return dialog
+
+
+	def CreateFolderChooser(title=""):
+		dialog = gtk.FileChooserDialog(title, None,
+			action=gtk.FILE_CHOOSER_ACTION_CREATE_FOLDER, buttons=(gtk.STOCK_CANCEL,
+			gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+		return dialog
+
+except AttributeError:
+	log("using deprecated FileSelection Dialog")
+	
+	def CreateFileChooser(title="", patterns=()):
+		dialog = gtk.FileSelection(title)
+		return dialog
+
+	CreateFolderChooser = CreateFileChooser
+
+
+
 total_size=0
 
 import bz2
@@ -217,7 +255,7 @@ class FTPWriter:
 		except ftplib.all_errors, details:
 			log("  Avalaunch is not here.")
 
-		# we must lock the buffer since its shaded between 2 threads
+		# we must lock the buffer since its shared between 2 threads
 		self.lock = thread.allocate_lock()
 
 	def quit(self):
@@ -891,6 +929,9 @@ class DialogMain(Window):
 		dialog.set_filter(filter)
 		#dialog.set_local_only(False)
 
+
+		dialog = CreateFileChooser(_("Open Xbox Iso"))
+
 		dialog.show_all()
 		result = dialog.run()
 		dialog.hide_all()	
@@ -911,6 +952,8 @@ class DialogMain(Window):
 		dialog = gtk.FileChooserDialog(_("Select Extract Folder"),None,
 			action=gtk.FILE_CHOOSER_ACTION_CREATE_FOLDER, buttons=(gtk.STOCK_CANCEL,
 			gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+
+		dialog = CreateFolderChooser(_("Select Extract Folder"))
 
 		if self.xbe_name:
 			dialog.set_current_name(self.xbe_name)
