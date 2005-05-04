@@ -1,4 +1,33 @@
 # this file is generated from the subversion log. do not edit!
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* first try with win32 build system
+
+2005-05-03  Gautier Portet <kassoulet gmail com>
+
+	* added a FileSelector backup, if FileChooser is not available
+
+2005-04-26  Gautier Portet <kassoulet gmail com>
+
+		* some minor translation fixes.
+
+2005-04-26  Gautier Portet <kassoulet gmail com>
+
+		* Woops, fixed broken folder walking.
+		    now we use recursion for the folders, and
+		    a list for the files, so the walk is correct
+		    and the overflow problems are gone
+
+2005-04-22  Gautier Portet <kassoulet gmail com>
+
+		* fixed crasher when iso contains empty files.
+		  (thanks Roald)
+		* added *.ISO in wilcards.
+		* fixed potential problem with extract and timeout.
+		* removed GTK.False deprecation (hope it will not
+		  break on previous PyGTK, this as to be checked)
+		  (thanks Kristian)
+
 2005-04-21  Gautier Portet <kassoulet gmail com>
 
 		* Added disabling of FREEROOTSPACE on Avalaunch when

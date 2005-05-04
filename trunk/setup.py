@@ -6,8 +6,6 @@ import os
 assert sys.version >= '2', "Install Python 2.0 or greater"
 from distutils.core import setup, Extension
 
-import py2exe
-
 PACKAGE="gxiso"
 VERSION="1.4"
 ALL_LINGUAS=["fr", "it"]
@@ -48,7 +46,7 @@ def update_translations():
 		os.system("msgfmt -o po/%s.mo po/%s.po" % (lang,lang))
 		try:
 			os.mkdir("po/tmp/%s"%lang)
-			#os.symlink("../../%s.mo"%lang,"po/tmp/%s/%s.mo"%(lang, PACKAGE))
+			os.symlink("../../%s.mo"%lang,"po/tmp/%s/%s.mo"%(lang, PACKAGE))
 		except:
 			pass
 
@@ -62,6 +60,7 @@ update_translations()
 data = translation_files()
 
 if sys.platform == 'win32':
+	import py2exe
 	data.append(('.', ['src/gxiso.glade','src/gxiso.png']))
 	data.append(('.', ['README']))
 else:
@@ -70,7 +69,6 @@ else:
 opts = {
 	"py2exe": {
 	"includes":"pango,atk,gobject"
-
 	}
 }
 
