@@ -6,8 +6,10 @@ import os
 assert sys.version >= '2', "Install Python 2.0 or greater"
 from distutils.core import setup, Extension
 
+import py2exe
+
 PACKAGE="gxiso"
-VERSION=1.4
+VERSION="1.4"
 ALL_LINGUAS=["fr", "it"]
 
 #hack hack HACK !!!
@@ -23,21 +25,21 @@ def update_translations():
 
 	# update main pot file
 	potfile = 'po/POTFILES.in'
-	
+
 	if not os.path.exists(potfile):
 		sys.exit("No such file: '%s'" % potfile)
-	
+
 	f = open(potfile)
 	files = ""
-	
+
 	for line in f:
 		# ignore comments and newline
 		if line.startswith('#') or line.startswith('\n'):
 			continue
-		else: 
+		else:
 			files += " "+line.strip()
 	f.close()
-	
+
 	os.system("xgettext -o po/%s.pot %s" % ( PACKAGE,files) )
 
 	# update langages files
@@ -46,7 +48,7 @@ def update_translations():
 		os.system("msgfmt -o po/%s.mo po/%s.po" % (lang,lang))
 		try:
 			os.mkdir("po/tmp/%s"%lang)
-			os.symlink("../../%s.mo"%lang,"po/tmp/%s/%s.mo"%(lang, PACKAGE))
+			#os.symlink("../../%s.mo"%lang,"po/tmp/%s/%s.mo"%(lang, PACKAGE))
 		except:
 			pass
 
@@ -58,7 +60,19 @@ except:
 update_translations()
 
 data = translation_files()
-data.append(('share/gxiso', ['src/gxiso.glade','src/gxiso.png']))
+
+if sys.platform == 'win32':
+	data.append(('.', ['src/gxiso.glade','src/gxiso.png']))
+	data.append(('.', ['README']))
+else:
+	data.append(('share/gxiso', ['src/gxiso.glade','src/gxiso.png']))
+
+opts = {
+	"py2exe": {
+	"includes":"pango,atk,gobject"
+
+	}
+}
 
 
 setup(
@@ -72,5 +86,16 @@ setup(
 	data_files = data,
 	packages = ["gxiso"],
 	package_dir = {"gxiso" : "src"},
-	scripts = ["src/gxiso.py"]
+
+	scripts = ["src/gxiso.py"],
+
+	options=opts,
+
+	windows=[
+	{
+		"script": "src/gxiso.py",
+		"icon_resources": [(1, "gxiso.ico")]
+	}, ],
+
+
 )

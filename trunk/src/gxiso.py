@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# gXiso - GTK2 Xbox Xiso eXtractor 
+# gXiso - GTK2 Xbox Xiso eXtractor
 # Copyright ( C) 2005 Gautier Portet < kassoulet gmail com >
 
 # This program is free software; you can redistribute it and/or modify
@@ -27,11 +27,14 @@ import ftplib
 import socket
 import pygtk
 
-pygtk.require('2.0')
-	
+if sys.platform != 'win32':
+	pygtk.require('2.0')
+
 import gtk
 import gtk.glade
 import gettext
+import pango
+import atk
 
 BUFFER_SIZE=1024*16
 
@@ -59,7 +62,7 @@ class ExtractError(Exception):
 
 def show_error(message):
 	# display a message dialog with an error message
-	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, 
+	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
 		gtk.BUTTONS_OK, message)
 	dialog.set_markup(message)
 	dialog.run()
@@ -75,7 +78,7 @@ try:
 	dir(gtk.FileChooserDialog)
 
 	def CreateFileChooser(title="", patterns=()):
-	
+
 		dialog = gtk.FileChooserDialog(title, None,
 			action=gtk.FILE_CHOOSER_ACTION_OPEN, buttons=(gtk.STOCK_CANCEL,
 			gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
@@ -96,7 +99,7 @@ try:
 
 except AttributeError:
 	log("using deprecated FileSelection Dialog")
-	
+
 	def CreateFileChooser(title="", patterns=()):
 		dialog = gtk.FileSelection(title)
 		return dialog
@@ -117,12 +120,12 @@ class ArchiveExtractor:
 			print "archive format:", self.name
 			return True
 		return False
-	
+
 class BZip2Extractor (ArchiveExtractor):
 	def __init__(self):
 		self.name = "bzip2"
 		self.pattern = re.compile(r".*\.bz2")
-		
+
 	def extract(self, filename):
 		output = os.tmpnam()
 		print "writing:", output
@@ -141,7 +144,7 @@ class GZipExtractor (ArchiveExtractor):
 	def __init__(self):
 		self.name = "gzip"
 		self.pattern = re.compile(r".*\.gz")
-		
+
 	def extract(self, filename):
 		output = os.tmpnam()
 		print "writing:", output
@@ -196,7 +199,7 @@ class FileWriter:
 			pass
 		# TODO: we must check for an error !
 		self.chdir(self.base_folder)
-		
+
 	def open(self, filename):
 		self.file = open(filename,"wb")
 	def write(self, buffer):
@@ -246,7 +249,7 @@ class FTPWriter:
 		except ftplib.all_errors, details:
 			if details.__class__ == socket.error:
 				details = details[1]
-				
+
 			raise ExtractError(_("<b>Cannot connect to xbox:\n</b>\n"+str(details)))
 
 		try:
@@ -282,10 +285,10 @@ class FTPWriter:
 		self.buffer = ""
 		self.closing = False
 		self.error = None
-		
+
 		thread.start_new_thread(self.upload,(filename,))
 		self.filename = filename
-		
+
 	def write(self, buffer):
 		# fill buffer with data from file
 		try:
@@ -295,12 +298,12 @@ class FTPWriter:
 		except TypeError:
 			# an error ocurred
 			raise ExtractError(self.error)
-			
-		# append to buffer	
+
+		# append to buffer
 		self.lock.acquire()
 		self.buffer += buffer
 		self.lock.release()
-		
+
 	def close(self):
 		# end of the file
 		self.closing = True
@@ -353,7 +356,7 @@ class FTPWriter:
 		self.buffer = self.buffer[size:]
 		self.lock.release()
 		return buffer
-	
+
 class FileAndFTPWriter:
 	def __init__(self, local_folder, ip, login, password, ftp_folder):
 		self.file = FileWriter(local_folder)
@@ -404,10 +407,10 @@ class XisoExtractor:
 	def write_file_real(self,filename,size,sector):
 		# actually write or upload the file
 		self.current_file = filename
-	
+
 		self.iso.seek(sector*2048,SEEK_SET)
 		self.writer.open(filename)
-		
+
 		buffer = "-"
 		try:
 			while buffer != "":
@@ -416,55 +419,55 @@ class XisoExtractor:
 				self.writer.write(buffer);
 				size = size - readsize
 				self.write_position += readsize
-				if size<0: 
+				if size<0:
 					break
-				if self.canceled: 
+				if self.canceled:
 					return
 				while self.paused:
 					time.sleep(0.1)
-		finally:	
+		finally:
 			self.writer.close()
-		
+
 	def parse_xbe(self,sector):
 		# search for xbe name
-		
+
 		self.iso.seek(sector*2048,SEEK_SET)
 		self.iso.seek(0x190,SEEK_CUR)
 		name = self.iso.read(80)
 
 		self.xbe_name = ""
-		
+
 		if not name:
 			return
 
-		# TODO: better solution for wide chars	
+		# TODO: better solution for wide chars
 		for i in range(len(name)):
 			if name[i] != "\x00":
 				self.xbe_name += name[i]
-		
+
 	def browse_folder(self, sector, offset):
 		# browse an iso folder entry
-		
+
 		file_list = [ (sector, offset) ]
 
 		while file_list:
 			sector, offset = file_list.pop()
-		
-			if self.canceled: 
+
+			if self.canceled:
 				return
-			
+
 			# jump to sector
 			self.iso.seek(sector*2048+offset, SEEK_SET)
-		
+
 			# read file header
 			ltable, rtable, newsector, filesize, attributes, filename_size \
 			= read_unpack(self.iso, "<HHLLBB")
-			
+
 			# read file name
 			filename = self.iso.read(filename_size)
-			
+
 			self.files = self.files + 1
-	
+
 			if attributes & FILE_DIR > 0:
 				if filename_size > 0:
 					# browse folder
@@ -481,7 +484,7 @@ class XisoExtractor:
 				else:
 					log("warning: file without filename (offset:%d ,size:%d)" % \
 							(newsector, filesize) )
-		
+
 			if rtable > 0:
 				file_list.append( (sector, rtable*4) )
 			if ltable > 0:
@@ -489,12 +492,12 @@ class XisoExtractor:
 		return
 
 	def browse_folders(self, sector):
-		
+
 		self.browse_folder(sector, 0)
 
 	def extract(self,iso_name):
 		# parse and extract iso
-	
+
 		self.active=True
 		saved_folder = os.getcwd()
 		try:
@@ -536,7 +539,7 @@ class XisoExtractor:
 
 		# skip beggining
 		self.iso.seek(0x10000,SEEK_SET)
-		
+
 		# read and verify header
 		header = self.iso.read(0x14)
 		if header != signature:
@@ -544,10 +547,10 @@ class XisoExtractor:
 
 		# read root sector address
 		root_sector, = read_unpack(self.iso, "<L")
-	
+
 		# skip root_size + FILETIME + unused
 		self.iso.seek(0x7d4,SEEK_CUR)
-		
+
 		# read and verify header
 		header = self.iso.read(0x14)
 		if header != signature:
@@ -562,7 +565,7 @@ class Window:
 	# all windows herits from this class
 	def load_glade(self, xml, container):
 		self.dialog_xml = gtk.glade.XML(xml, container)
-	
+
 		signals = {}
 		for iteration in dir(self):
 			# automatically connect to XML GUI
@@ -586,7 +589,7 @@ class DialogProgress(Window):
 		self.ui_progressbar =\
 		self.ui_dialog_progress =\
 			None
-		
+
 		self.load_glade("gxiso.glade", "dialog_progress")
 
 	def start(self):
@@ -601,18 +604,18 @@ class DialogProgress(Window):
 
 	def set_current_operation(self, operation):
 		self.ui_label_operation.set_markup("<b>%s</b>" % operation)
-		
+
 	def set_current_file(self, filename, number, total):
 		self.ui_label_detail.set_markup("<i>%s</i>" % filename)
 		self.current_file = number
 		self.total_files = total
-		
+
 	def pulse(self):
 		self.ui_progressbar.pulse()
-		
+
 	def set_fraction(self, fraction):
 		if self.paused: return
-		
+
 		self.ui_progressbar.set_fraction(fraction)
 		now=time.time()
 		if fraction<0.01: fraction = 0.01
@@ -628,21 +631,21 @@ class DialogProgress(Window):
 		if self.paused:
 			text = _("Paused")
 
-		self.ui_progressbar.set_text(_("File %d/%d, %s") % 
+		self.ui_progressbar.set_text(_("File %d/%d, %s") %
 			(self.current_file, self.total_files, text))
 
 	def on_button_pause_clicked(self, widget):
 		self.paused = not self.paused
 		if self.paused:
-			# pause 
+			# pause
 			self.pausetime = time.time()
 		else:
 			# remove paused time
 			self.starttime += time.time()-self.pausetime
-			
+
 	def on_button_cancel_clicked(self, widget):
 		self.canceled = True
-	
+
 
 class DialogMain(Window):
 
@@ -659,7 +662,7 @@ class DialogMain(Window):
 			"xbox_folder": "games"
 		}
 		self.settings = self.default_settings
-		
+
 		# widgets we will connect to
 		self.ui_checkbutton_extract =\
 		self.ui_checkbutton_upload =\
@@ -677,20 +680,20 @@ class DialogMain(Window):
 
 		self.xbe_name = None
 		self.load_glade("gxiso.glade", "dialog_main")
-		
+
 	def load_settings(self):
 		filename = os.path.expanduser("~/.gxiso")
 		try:
 			f = open(filename,"r")
 		except IOError:
 			log("warning: cannot read "+filename)
-			return 
-			
+			return
+
 		try:
 			self.settings = eval(f.read(-1))
 		except SyntaxError:
 			pass
-			
+
 		f.close()
 		try:
 			self.settings_to_ui()
@@ -698,9 +701,9 @@ class DialogMain(Window):
 			log("warning: error while applying settings, fallback to defaults.")
 			self.settings = self.default_settings
 			self.settings_to_ui()
-		
+
 	def save_settings(self):
-	
+
 		self.settings_from_ui()
 		filename = os.path.expanduser("~/.gxiso")
 		try:
@@ -718,7 +721,7 @@ class DialogMain(Window):
 		self.ui_entry_xbox_password.set_text(self.settings["xbox_password"])
 		self.ui_entry_xbox_folder.set_text(self.settings["xbox_folder"])
 		self.ui_combobox_xbox_drive.set_active(self.settings["xbox_drive"])
-	
+
 	def settings_from_ui(self):
 		self.settings["extract"] = self.ui_checkbutton_extract.get_active()
 		self.settings["upload"] = self.ui_checkbutton_upload.get_active()
@@ -773,7 +776,7 @@ class DialogMain(Window):
 
 	def extract_xiso(self):
 		self.extracted_filename = None
-	
+
 		# get infos from ui
 		drives = ["/c/","/e/","/f/","/g/"]
 		filename = self.ui_entry_xiso.get_text()
@@ -783,7 +786,7 @@ class DialogMain(Window):
 
 		if ftp_folder[-1] != "/":
 			ftp_folder += "/"
-		
+
 		if self.xbe_name:
 			ftp_folder += self.xboxify_filename(self.xbe_name)
 		else:
@@ -794,7 +797,7 @@ class DialogMain(Window):
 		ftp_ip = self.ui_entry_xbox_address.get_text()
 		ftp_login = self.ui_entry_xbox_login.get_text()
 		ftp_password = self.ui_entry_xbox_password.get_text()
-		
+
 		# init progress dialog
 		progress = DialogProgress()
 		progress.set_current_operation(_("Extracting Archive"))
@@ -860,7 +863,7 @@ class DialogMain(Window):
 		time_inactive = 0.0
 
 		while xiso.active:
-		
+
 			if xiso.write_position == 0:
 				# still not writing
 				progress.pulse()
@@ -873,7 +876,7 @@ class DialogMain(Window):
 				fraction = float(xiso.write_position)/float(total_size)
 				progress.set_current_file(xiso.current_file, xiso.files, total_files)
 				progress.set_fraction(fraction)
-				
+
 				# detect transfer timeout
 				if xiso.write_position == previous_position:
 					time_inactive += 0.1
@@ -883,11 +886,11 @@ class DialogMain(Window):
 					xiso.error = _("<b>Transfer timeout</b>\nThe xbox is not responding")
 					xiso.active = False
 				previous_position = xiso.write_position
-				
+
 			# handle events
 			xiso.canceled = progress.canceled
 			xiso.paused = progress.paused
-			
+
 			# and let our working thread be called
 			gtk_iteration()
 			time.sleep(0.1)
@@ -897,7 +900,7 @@ class DialogMain(Window):
 		else:
 			log( "done! (in %ds, %.2f MiB/s)" % (time.time()-progress.starttime,total_size/(time.time()-progress.starttime)/(1024*1024)))
 		progress.stop()
-		
+
 		# remove tmp file
 		if self.extracted_filename:
 			os.unlink(self.extracted_filename)
@@ -926,7 +929,7 @@ class DialogMain(Window):
 		filter.add_pattern("*.gz")
 		filter.add_pattern("*.bz2")
 
-		dialog.set_filter(filter)
+		#dialog.set_filter(filter)
 		#dialog.set_local_only(False)
 
 
@@ -934,7 +937,7 @@ class DialogMain(Window):
 
 		dialog.show_all()
 		result = dialog.run()
-		dialog.hide_all()	
+		dialog.hide_all()
 		if result == gtk.RESPONSE_OK:
 			self.iso_name = dialog.get_filename()
 			self.ui_entry_xiso.set_text(self.iso_name)
@@ -960,22 +963,22 @@ class DialogMain(Window):
 
 		dialog.show_all()
 		result = dialog.run()
-		dialog.hide_all()	
+		dialog.hide_all()
 		if result == gtk.RESPONSE_OK:
 			self.ui_entry_folder.set_text(dialog.get_filename())
 
 	def on_checkbutton_extract_toggled(self, widget):
 		self.settings["extract"] = self.ui_checkbutton_extract.get_active()
 		self.apply_ui_changes()
-		
+
 	def on_checkbutton_upload_toggled(self, widget):
 		self.settings["upload"] = self.ui_checkbutton_upload.get_active()
 		self.apply_ui_changes()
-		
+
 	def on_button_quit_clicked(self, widget):
 		self.save_settings()
 		gtk.main_quit()
-		
+
 	def on_destroy(self, widget, data=None):
 		self.save_settings()
 		gtk.main_quit()
@@ -997,13 +1000,13 @@ class GXiso:
 def find_data_dir():
 	# search for our data :)
 	dir = "."
-	
+
 	# current folder
 	if os.path.exists(os.path.join(dir,"gxiso.glade")):
 		return dir
-		
+
 	# executable folder
-	dir, t = os.path.split(os.path.abspath(sys.argv[0]))		
+	dir, t = os.path.split(os.path.abspath(sys.argv[0]))
 
 	if os.path.exists(os.path.join(dir,"gxiso.glade")):
 		return dir
@@ -1015,7 +1018,7 @@ def find_data_dir():
 		dir = os.path.join(dir, "gxiso")
 		if os.path.exists(os.path.join(dir,"gxiso.glade")):
 			return dir
-	return None	
+	return None
 
 
 def excepthook(type, value, tb):
@@ -1026,7 +1029,7 @@ def excepthook(type, value, tb):
 	message = _(
 	"<big><b>A programming error has been detected during the execution of this program.</b></big>"
 	"\n\n<tt><small>%s</small></tt>") % trace.getvalue()
-	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, 
+	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
 		gtk.BUTTONS_OK, message)
 	dialog.set_title(_("Bug Detected"))
 	dialog.set_markup(message)
@@ -1044,15 +1047,15 @@ if __name__ == "__main__":
 	gtk.glade.bindtextdomain(name)
 	gtk.glade.textdomain(name)
 	gettext.install(name, unicode=1)
-	
+
 	DATADIR = find_data_dir()
 	if DATADIR:
 		saved_folder = os.getcwd()
 		os.chdir(DATADIR)
-	
+
 		program = GXiso()
 		program.main()
-		
+
 		os.chdir(saved_folder)
 	else:
 		show_error(_("Cannot find data folder, please file a bug"))
