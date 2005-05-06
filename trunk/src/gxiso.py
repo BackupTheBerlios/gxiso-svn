@@ -83,11 +83,12 @@ try:
 			action=gtk.FILE_CHOOSER_ACTION_OPEN, buttons=(gtk.STOCK_CANCEL,
 			gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
 
-		filter = gtk.FileFilter()
-		for pattern in patterns:
-			filter.add_pattern(pattern)
-		dialog.set_filter(filter)
-		#dialog.set_local_only(False)
+		if patterns:
+			filter = gtk.FileFilter()
+			for pattern in patterns:
+				filter.add_pattern(pattern)
+			dialog.set_filter(filter)
+		dialog.set_local_only(True)
 		return dialog
 
 
@@ -919,21 +920,7 @@ class DialogMain(Window):
 
 
 	def on_button_xiso_browse_clicked(self, widget):
-		dialog = gtk.FileChooserDialog(_("Open Xbox Iso"),None,
-			action=gtk.FILE_CHOOSER_ACTION_OPEN, buttons=(gtk.STOCK_CANCEL,
-			gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
-
-		filter = gtk.FileFilter()
-		filter.add_pattern("*.iso")
-		filter.add_pattern("*.ISO")
-		filter.add_pattern("*.gz")
-		filter.add_pattern("*.bz2")
-
-		#dialog.set_filter(filter)
-		#dialog.set_local_only(False)
-
-
-		dialog = CreateFileChooser(_("Open Xbox Iso"))
+		dialog = CreateFileChooser(_("Open Xbox Iso"),("*.iso","*.ISO","*.gz","*.bz2"))
 
 		dialog.show_all()
 		result = dialog.run()
