@@ -5,15 +5,15 @@ what ?
 system ?
 
 	It's written in python, and thus is very portable. 
-	It has been tested on Linux, Windows and MacOSX
+	It has been tested on Linux and Windows.
 	
 dependancies ?
 
-	GTK 2.0, PyGTK 2.0
+	GTK 2.4, PyGTK 2.0
 	
 how to install ?
 
-	Windows and OSX:
+	Windows:
 	use the binary installlers.
 
 	linux:

@@ -1,6 +1,16 @@
 # this file is generated from the subversion log. do not edit!
 2005-05-04  Gautier Portet <kassoulet gmail com>
 
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* marked generated files to be ignored by svn
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* some fixes for build system
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
 	* first try with win32 build system
 
 2005-05-03  Gautier Portet <kassoulet gmail com>
