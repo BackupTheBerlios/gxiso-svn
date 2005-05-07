@@ -921,7 +921,6 @@ class DialogMain(Window):
 
 	def on_button_xiso_browse_clicked(self, widget):
 		dialog = CreateFileChooser(_("Open Xbox Iso"),("*.iso","*.ISO","*.gz","*.bz2"))
-
 		dialog.show_all()
 		result = dialog.run()
 		dialog.hide_all()
@@ -1031,9 +1030,15 @@ if __name__ == "__main__":
 
 	name = "gxiso"
 
-	gtk.glade.bindtextdomain(name)
-	gtk.glade.textdomain(name)
-	gettext.install(name, unicode=1)
+	try:
+		gtk.glade.bindtextdomain(name)
+		gtk.glade.textdomain(name)
+		gettext.install(name, unicode=1)
+	except LookupError:
+		#TODO: gettext fails on win32
+		log("gettext error, disabling...")
+		def _(str):
+			return str
 
 	DATADIR = find_data_dir()
 	if DATADIR:

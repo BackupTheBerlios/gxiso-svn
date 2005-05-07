@@ -34,7 +34,7 @@ SetCompressor lzma
 !insertmacro MUI_PAGE_INSTFILES
 ; Finish page
 !define MUI_FINISHPAGE_RUN "$INSTDIR\gxiso.exe"
-!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README"
+;!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -54,8 +54,8 @@ Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "gXiso-1.4-setup.exe"
 InstallDir "$PROGRAMFILES\gXiso"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
-ShowInstDetails show
-ShowUnInstDetails show
+ShowInstDetails hide
+ShowUnInstDetails hide
 
 Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
@@ -65,6 +65,10 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite try
   File /r dist\*.*
+  
+  CreateDirectory "$SMPROGRAMS\gXiso"
+  CreateShortCut "$SMPROGRAMS\gXiso\gXiso.lnk" "$INSTDIR\gxiso.exe"
+  CreateShortCut "$DESKTOP\gXiso.lnk" "$INSTDIR\gxiso.exe"
 SectionEnd
 
 Section -AdditionalIcons
@@ -99,7 +103,15 @@ FunctionEnd
 Section Uninstall
   RMDir /r "$INSTDIR"
 
+  Delete "$SMPROGRAMS\gXiso\Uninstall.lnk"
+  Delete "$SMPROGRAMS\gXiso\Website.lnk"
+  Delete "$DESKTOP\gXiso.lnk"
+  Delete "$SMPROGRAMS\gXiso\gXiso.lnk"
+
+  RMDir "$SMPROGRAMS\gXiso"
+
+
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
-  SetAutoClose true
+  SetAutoClose false
 SectionEnd
