@@ -108,10 +108,9 @@ except AttributeError:
 	CreateFolderChooser = CreateFileChooser
 
 
-
 total_size=0
 
-import bz2
+"""import bz2
 import gzip
 
 class ArchiveExtractor:
@@ -159,11 +158,100 @@ class GZipExtractor (ArchiveExtractor):
 		f.close()
 		print "done."
 		return output
+"""
 
+class FileReader:
+	pattern = ".iso"
+	def __init__(self, filename):
+		self.file = open(filename,"rb")
+		self.position = 0
+		self.skipped = 0
+		
+	def read(self, size):
+		self.position += size
+		return self.file.read(size)
+		
+	def skip(self, offset):
+		print "skip:", offset 
+		self.position += offset
+		self.file.seek(offset, SEEK_CUR)
+		self.skipped += offset
+		
+	def seek(self, position):
+		self.skip(position-self.position)
+		self.position = position
+	
+	def close(self):
+		self.file.close()
+		print "skipped %d bytes." % self.skipped
+
+class RarReader:
+	pattern = ".rar"
+	def __init__(self, filename):
+		self.position = 0
+		self.skipped = 0
+		
+		print "opening rar:", filename
+		list_stream = os.popen("rar l %s" % filename)
+		list = list_stream.read()
+		results = re.findall(r" (.+)\s+(\d+)\s+(\d+)\s+(\d+)%",list)
+
+		# TODO: handle folders!
+		iso = [file for file in results if ".iso" in file[0].lower()]
+		iso = iso[0]
+		iso_name = iso[0]
+		print "found iso in rar:", iso_name
+		
+		self.stream = os.popen( 'rar p -inul %s "%s"' % (filename, iso_name))
+
+		
+	def read(self, size):
+		#print "reading:", size 
+		self.position += size
+		return self.stream.read(size)
+		
+	def skip(self, offset):
+		print "skipping:", offset
+		if offset<0:
+			sys.exit()
+		while offset:
+			n = offset
+			if (n>BUFFER_SIZE):
+				n = BUFFER_SIZE
+			offset -= n
+			self.read(n)
+			
+		self.skipped += offset
+		
+	def seek(self, position):
+		self.skip(position-self.position)
+		self.position = position
+	
+	def close(self):
+		self.stream.close()
+		print "skipped %d bytes." % self.skipped
+
+
+readers = (
+	FileReader,
+	RarReader,
+)
+
+def create_reader(filename):
+	root, ext = os.path.splitext(filename)
+	if not ext:
+		return None
+	
+	for reader in readers:
+		if ext.lower() == reader.pattern:
+			return reader(filename)
+	return FileReader(filename)
+
+"""
 extractors = (
 	BZip2Extractor(),
 	GZipExtractor(),
-)
+)"""
 
 def extractor_factory(filename):
 	for extractor in extractors:
@@ -200,6 +288,7 @@ class FileWriter:
 			pass
 		# TODO: we must check for an error !
 		self.chdir(self.base_folder)
+		print self.base_folder ##
 
 	def open(self, filename):
 		self.file = open(filename,"wb")
@@ -384,6 +473,11 @@ class FileAndFTPWriter:
 		self.file.quit()
 		self.ftp.quit()
 
+
+dir_str = ""
+file_str= ""
+
+
 class XisoExtractor:
 
 	def __init__(self, writer):
@@ -405,11 +499,16 @@ class XisoExtractor:
 			# search xbe real name
 			self.parse_xbe(sector)
 
+			##
+		else:
+			self.iso.seek(sector*2048)
+
+		
 	def write_file_real(self,filename,size,sector):
 		# actually write or upload the file
 		self.current_file = filename
 
-		self.iso.seek(sector*2048,SEEK_SET)
+		self.iso.seek(sector*2048)
 		self.writer.open(filename)
 
 		buffer = "-"
@@ -432,8 +531,8 @@ class XisoExtractor:
 	def parse_xbe(self,sector):
 		# search for xbe name
 
-		self.iso.seek(sector*2048,SEEK_SET)
-		self.iso.seek(0x190,SEEK_CUR)
+		self.iso.seek(sector*2048)
+		self.iso.skip(0x190)
 		name = self.iso.read(80)
 
 		self.xbe_name = ""
@@ -446,10 +545,72 @@ class XisoExtractor:
 			if name[i] != "\x00":
 				self.xbe_name += name[i]
 
-	def browse_folder(self, sector, offset):
+	def browse_file(self, sector, filename, size):
+		print "%11d file:  %40s (%10d)" % (sector*2048, filename, size) 
+		self.iso.seek(sector*2048)
+		self.iso.skip(size)
+
+	def browse_entry(self, sector, offset):
+		pos = sector*2048+offset
+		
+		# jump to sector
+		self.iso.seek(pos)
+
+		# read file header
+		ltable, rtable, newsector, filesize, attributes, filename_size \
+		= read_unpack(self.iso, "<HHLLBB")
+		
+		# read file name
+		filename = self.iso.read(filename_size)
+
+		print "%11d entry: %40s" % (pos, filename)
+		
+		if (attributes & FILE_DIR > 0) and (filename_size>0):
+			# browse folder
+			#self.writer.mkdir(filename)
+			#if not self.writer.chdir(filename):
+			#	raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
+
+			#print newsector*2048, "/", filename
+			
+			self.sector_list.append( (newsector*2048, newsector, 0, "entry", filename, 0) )
+			#self.browse_folder( newsector, 0 )
+			#self.writer.chdir("..")
+		else:
+			# write file
+			if filename:
+				self.size  = self.size + filesize
+				self.sector_list.append( (newsector*2048, newsector, 0, "file", filename, filesize) )
+			else:
+				log("warning: file without filename (offset:%d ,size:%d)" % \
+						(newsector, filesize) )
+
+		if rtable > 0:
+			self.sector_list.append( ( sector*2048+rtable ,sector, rtable*4, "entry", "", 0) )
+		if ltable > 0:
+			self.sector_list.append( ( sector*2048+ltable ,sector, ltable*4, "entry", "", 0) )
+
+	def browse_sector(self):
+		while self.sector_list:
+			# maintain list sorted by sector 
+			self.sector_list.sort()
+		
+			pos, sector, offset, type, filename, size = \
+				self.sector_list.pop(0)
+			if type == "entry":
+				self.browse_entry(sector, offset)
+			if type == "file":
+				self.browse_file(sector, filename, size)
+		
+
+	def browse_folder_UNUSED(self, sector, offset):
 		# browse an iso folder entry
 
 		file_list = [ (sector, offset) ]
+
+		folder_list = []
+
+		global current_sector
 
 		while file_list:
 			sector, offset = file_list.pop()
@@ -457,8 +618,13 @@ class XisoExtractor:
 			if self.canceled:
 				return
 
+			pos = sector*2048+offset
+			
 			# jump to sector
-			self.iso.seek(sector*2048+offset, SEEK_SET)
+			self.iso.seek(pos)
+
+			if pos < current_sector:
+				print "*** non continous sectors! s=", pos, current_sector
 
 			# read file header
 			ltable, rtable, newsector, filesize, attributes, filename_size \
@@ -467,21 +633,33 @@ class XisoExtractor:
 			# read file name
 			filename = self.iso.read(filename_size)
 
+			#print "* pos: ", pos, "->", sector, "|", filename
+	
+			global dir_str
+			dir_str+="%30s %8d\n" % (filename, sector)
+	
 			self.files = self.files + 1
 
 			if attributes & FILE_DIR > 0:
 				if filename_size > 0:
 					# browse folder
-					self.writer.mkdir(filename)
-					if not self.writer.chdir(filename):
-						raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
-					self.browse_folder( newsector, 0 )
-					self.writer.chdir("..")
+					#self.writer.mkdir(filename)
+					#if not self.writer.chdir(filename):
+					#	raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
+
+					#print newsector*2048, "/", filename
+					
+					folder_list.append( (newsector, filename) )
+					#self.browse_folder( newsector, 0 )
+					#self.writer.chdir("..")
 			else:
 				# write file
 				if filename:
 					self.size  = self.size + filesize
 					self.write_file(filename, filesize, newsector);
+					global file_str
+					file_str+="%30s %8d\n" % (filename, newsector)
+					print newsector, filename, filesize
 				else:
 					log("warning: file without filename (offset:%d ,size:%d)" % \
 							(newsector, filesize) )
@@ -490,11 +668,26 @@ class XisoExtractor:
 				file_list.append( (sector, rtable*4) )
 			if ltable > 0:
 				file_list.append( (sector, ltable*4) )
+			
+			#if s != current_sector: print  pos, filename , filesize#, ltable*4+2048*sector, rtable*4+2048*sector
+			current_sector = pos
+		
+		while folder_list:
+			sector,filename = folder_list.pop(0)
+			self.writer.mkdir(filename)
+			if not self.writer.chdir(filename):
+				raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
+			#print sector*2048, "/", filename 
+			self.browse_folder(sector, 0)
+			self.writer.chdir("..")
+			
 		return
 
-	def browse_folders(self, sector):
+	def browse_start(self, sector):
 
-		self.browse_folder(sector, 0)
+		self.sector_list = []
+		self.sector_list.append( (sector*2048, sector, 0, "entry", "", 0) )
+		self.browse_sector()
 
 	def extract(self,iso_name):
 		# parse and extract iso
@@ -507,7 +700,6 @@ class XisoExtractor:
 			self.parse_internal(iso_name)
 			self.writer.quit()
 		except ExtractError, details:
-			os.chdir(saved_folder)
 			self.error = details.message
 		os.chdir(saved_folder)
 		self.active=False
@@ -525,21 +717,28 @@ class XisoExtractor:
 		self.write_position=0
 
 		log("opening xiso: "+iso_name);
-		try:
-			self.iso = file(iso_name, "rb");
-		except IOError:
-			return _("<b>Cannot open '%s'</b>") % iso_name
-
-		signature = "MICROSOFT*XBOX*MEDIA"
 
 		# make sure file is really readable in whole
 		try:
-			self.iso.seek(0,SEEK_END)
+			test = file(iso_name, "rb")
 		except IOError:
-			return _("<b>Cannot read iso (too big ?)</b>")
+			return _("<b>Cannot read iso</b>")
+		
+		try:
+			test.seek(0,SEEK_END)
+		except IOError:
+			return _("<b>Cannot read whole iso (too big ?)</b>")
+		test.close()
+
+		try:
+			self.iso = create_reader(iso_name)
+		except IOError:
+			return _("<b>Cannot open '%s'</b>") % iso_name
+
+		signature = "\x4d\x49\x43\x52\x4f\x53\x4f\x46\x54\x2a\x58\x42\x4f\x58\x2a\x4d\x45\x44\x49\x41"
 
 		# skip beggining
-		self.iso.seek(0x10000,SEEK_SET)
+		self.iso.skip(0x10000)
 
 		# read and verify header
 		header = self.iso.read(0x14)
@@ -550,7 +749,7 @@ class XisoExtractor:
 		root_sector, = read_unpack(self.iso, "<L")
 
 		# skip root_size + FILETIME + unused
-		self.iso.seek(0x7d4,SEEK_CUR)
+		self.iso.skip(0x7d4)
 
 		# read and verify header
 		header = self.iso.read(0x14)
@@ -558,7 +757,9 @@ class XisoExtractor:
 			return _("<b>Not a valid xbox iso image</b>")
 
 		# and start extracting files
-		self.browse_folders(root_sector)
+		self.browse_start(root_sector)
+
+		self.iso.close()
 
 		return None
 
@@ -920,7 +1121,7 @@ class DialogMain(Window):
 
 
 	def on_button_xiso_browse_clicked(self, widget):
-		dialog = CreateFileChooser(_("Open Xbox Iso"),("*.iso","*.ISO","*.gz","*.bz2"))
+		dialog = CreateFileChooser(_("Open Xbox Iso"),("*.iso","*.ISO","*.gz","*.bz2","*.rar"))
 		dialog.show_all()
 		result = dialog.run()
 		dialog.hide_all()
@@ -1027,7 +1228,6 @@ def excepthook(type, value, tb):
 if __name__ == "__main__":
 
 	sys.excepthook = excepthook
-
 	name = "gxiso"
 
 	try:
