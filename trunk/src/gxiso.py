@@ -172,7 +172,7 @@ class FileReader:
 		return self.file.read(size)
 		
 	def skip(self, offset):
-		print "skip:", offset 
+		#print "skip:", offset 
 		self.position += offset
 		self.file.seek(offset, SEEK_CUR)
 		self.skipped += offset
@@ -211,7 +211,7 @@ class RarReader:
 		return self.stream.read(size)
 		
 	def skip(self, offset):
-		print "skipping:", offset
+		#print "skipping:", offset
 		if offset<0:
 			sys.exit()
 		while offset:
@@ -545,12 +545,26 @@ class XisoExtractor:
 			if name[i] != "\x00":
 				self.xbe_name += name[i]
 
-	def browse_file(self, sector, filename, size):
-		print "%11d file:  %40s (%10d)" % (sector*2048, filename, size) 
+	def browse_file(self, sector, filename, size, folders):
+	
+		if len(folders) < len(self.current_folders):
+			print "chdir:", self.current_folders[-1]
+		if len(folders) > len(self.current_folders):
+			print "chdir: .."
+	
+	
+		print "%11d file:  %40s (%10d) %s %s" % (sector*2048, filename, size, \
+				"/".join(folders), "/".join(self.current_folders)) 
+				
+		self.current_folders = folders
+				
+				
 		self.iso.seek(sector*2048)
 		self.iso.skip(size)
 
-	def browse_entry(self, sector, offset):
+		
+
+	def browse_entry(self, sector, offset, folders):
 		pos = sector*2048+offset
 		
 		# jump to sector
@@ -563,7 +577,7 @@ class XisoExtractor:
 		# read file name
 		filename = self.iso.read(filename_size)
 
-		print "%11d entry: %40s" % (pos, filename)
+		#print "%11d entry: %40s %s" % (pos, filename, "/".join(folders))
 		
 		if (attributes & FILE_DIR > 0) and (filename_size>0):
 			# browse folder
@@ -573,34 +587,42 @@ class XisoExtractor:
 
 			#print newsector*2048, "/", filename
 			
-			self.sector_list.append( (newsector*2048, newsector, 0, "entry", filename, 0) )
+			nfolders = folders[:]
+			nfolders.append(filename)
+			print "mkdir: ", filename
+			
+			#self.current_folders = nfolders
+			self.sector_list.append( (newsector*2048, newsector, 0, "entry", filename, 0, nfolders) )
 			#self.browse_folder( newsector, 0 )
 			#self.writer.chdir("..")
 		else:
 			# write file
 			if filename:
 				self.size  = self.size + filesize
-				self.sector_list.append( (newsector*2048, newsector, 0, "file", filename, filesize) )
+				self.sector_list.append( (newsector*2048, newsector, 0, "file", filename, filesize, folders) )
 			else:
 				log("warning: file without filename (offset:%d ,size:%d)" % \
 						(newsector, filesize) )
 
 		if rtable > 0:
-			self.sector_list.append( ( sector*2048+rtable ,sector, rtable*4, "entry", "", 0) )
+			self.sector_list.append( ( sector*2048+rtable ,sector, rtable*4, "entry", "", 0, folders) )
 		if ltable > 0:
-			self.sector_list.append( ( sector*2048+ltable ,sector, ltable*4, "entry", "", 0) )
+			self.sector_list.append( ( sector*2048+ltable ,sector, ltable*4, "entry", "", 0, folders) )
+
+		if not (rtable or ltable):
+			print "end of folder:", "/".join(folders)
 
 	def browse_sector(self):
 		while self.sector_list:
 			# maintain list sorted by sector 
 			self.sector_list.sort()
 		
-			pos, sector, offset, type, filename, size = \
+			pos, sector, offset, type, filename, size, folders = \
 				self.sector_list.pop(0)
 			if type == "entry":
-				self.browse_entry(sector, offset)
+				self.browse_entry(sector, offset, folders)
 			if type == "file":
-				self.browse_file(sector, filename, size)
+				self.browse_file(sector, filename, size, folders)
 		
 
 	def browse_folder_UNUSED(self, sector, offset):
@@ -686,7 +708,8 @@ class XisoExtractor:
 	def browse_start(self, sector):
 
 		self.sector_list = []
-		self.sector_list.append( (sector*2048, sector, 0, "entry", "", 0) )
+		self.current_folders = []
+		self.sector_list.append( (sector*2048, sector, 0, "entry", "", 0, []) )
 		self.browse_sector()
 
 	def extract(self,iso_name):
@@ -1226,6 +1249,17 @@ def excepthook(type, value, tb):
 
 
 if __name__ == "__main__":
+
+	def _(str):
+		return str
+
+	xiso = XisoExtractor(NullWriter())
+	xiso.parse("doomsday.iso")
+
+	
+
+	sys.exit()
+
 
 	sys.excepthook = excepthook
 	name = "gxiso"
