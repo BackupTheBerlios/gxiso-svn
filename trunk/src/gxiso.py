@@ -161,13 +161,13 @@ class GZipExtractor (ArchiveExtractor):
 """
 
 class FileReader:
-	pattern = ".iso"
+	patterns = (".iso")
 	archive = False
 	def __init__(self, filename):
 		self.file = open(filename,"rb")
 		self.position = 0
 		self.skipped = 0
-		
+
 	def read(self, size):
 		self.position += size
 		return self.file.read(size)
@@ -187,7 +187,7 @@ class FileReader:
 		print "skipped %d bytes." % self.skipped
 
 class RarReader:
-	pattern = ".rar"
+	patterns = (".rar", ".000", ".001")
 	archive = True
 	def __init__(self, filename):
 		self.position = 0
@@ -196,7 +196,6 @@ class RarReader:
 		print "opening rar:", filename
 		list_stream = os.popen("rar l %s" % filename)
 		list = list_stream.read()
-		##results = re.findall(r" (.+)\s+(\d+)\s+(\d+)\s+(\d+)%",list)
 		results = re.findall(r" (.+) (\d+) (\d+)",list)
 
 		# TODO: handle folders!
@@ -207,7 +206,6 @@ class RarReader:
 		print "found iso in rar:", iso_name
 		
 		self.stream = os.popen( 'rar p -inul %s "%s"' % (filename, iso_name))
-
 		
 	def read(self, size):
 		#print "reading:", size 
@@ -247,8 +245,9 @@ def create_reader(filename):
 		return None
 	
 	for reader in readers:
-		if ext.lower() == reader.pattern:
-			return reader(filename)
+		for pattern in reader.patterns:
+			if ext.lower() == pattern:
+				return reader(filename)
 	return FileReader(filename)
 
 def is_archive(filename):
@@ -257,9 +256,10 @@ def is_archive(filename):
 		return False
 	
 	for reader in readers:
-		if ext.lower() == reader.pattern:
-			if reader.archive:
-				return True
+		for pattern in reader.patterns:
+			if ext.lower() == pattern:
+				if reader.archive:
+					return True
 	return False
 
 
@@ -1156,7 +1156,8 @@ class DialogMain(Window):
 
 
 	def on_button_xiso_browse_clicked(self, widget):
-		dialog = CreateFileChooser(_("Open Xbox Iso"),("*.iso","*.ISO","*.gz","*.bz2","*.rar"))
+		dialog = CreateFileChooser(_("Open Xbox Iso"), \
+				("*.iso","*.ISO","*.gz","*.bz2","*.rar","*.000","*.001"))
 		dialog.show_all()
 		result = dialog.run()
 		dialog.hide_all()
