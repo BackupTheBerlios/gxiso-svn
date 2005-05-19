@@ -162,6 +162,7 @@ class GZipExtractor (ArchiveExtractor):
 
 class FileReader:
 	pattern = ".iso"
+	archive = False
 	def __init__(self, filename):
 		self.file = open(filename,"rb")
 		self.position = 0
@@ -187,6 +188,7 @@ class FileReader:
 
 class RarReader:
 	pattern = ".rar"
+	archive = True
 	def __init__(self, filename):
 		self.position = 0
 		self.skipped = 0
@@ -194,10 +196,12 @@ class RarReader:
 		print "opening rar:", filename
 		list_stream = os.popen("rar l %s" % filename)
 		list = list_stream.read()
-		results = re.findall(r" (.+)\s+(\d+)\s+(\d+)\s+(\d+)%",list)
+		##results = re.findall(r" (.+)\s+(\d+)\s+(\d+)\s+(\d+)%",list)
+		results = re.findall(r" (.+) (\d+) (\d+)",list)
 
 		# TODO: handle folders!
 		iso = [file for file in results if ".iso" in file[0].lower()]
+		# TODO: check for no iso in rar!
 		iso = iso[0]
 		iso_name = iso[0]
 		print "found iso in rar:", iso_name
@@ -247,18 +251,31 @@ def create_reader(filename):
 			return reader(filename)
 	return FileReader(filename)
 
+def is_archive(filename):
+	root, ext = os.path.splitext(filename)
+	if not ext:
+		return False
+	
+	for reader in readers:
+		if ext.lower() == reader.pattern:
+			if reader.archive:
+				return True
+	return False
+
+
+
 """
 extractors = (
 	BZip2Extractor(),
 	GZipExtractor(),
-)"""
+)
 
 def extractor_factory(filename):
 	for extractor in extractors:
 		if extractor.isValid(filename):
 			return extractor
 	return None
-
+"""
 class NullWriter:
 	# do nothing writer
 	def init(self):
@@ -545,24 +562,24 @@ class XisoExtractor:
 			if name[i] != "\x00":
 				self.xbe_name += name[i]
 
+		#self.canceled = True
+
+
 	def browse_file(self, sector, filename, size, folders):
 	
-		if len(folders) < len(self.current_folders):
-			print "chdir:", self.current_folders[-1]
 		if len(folders) > len(self.current_folders):
-			print "chdir: .."
+			folder = folders[-1]
+			self.writer.mkdir(folder)
+			if not self.writer.chdir(folder):
+				raise ExtractError(_("<b>Cannot change to directory:</b>%s") % folder)
+		if len(folders) < len(self.current_folders):
+			self.writer.chdir("..")
 	
-	
-		print "%11d file:  %40s (%10d) %s %s" % (sector*2048, filename, size, \
-				"/".join(folders), "/".join(self.current_folders)) 
+		print "%11d file:  %40s (%10d)" % (sector*2048, filename, size)
 				
 		self.current_folders = folders
-				
-				
-		self.iso.seek(sector*2048)
-		self.iso.skip(size)
-
-		
+			
+		self.write_file(filename, size, sector)
 
 	def browse_entry(self, sector, offset, folders):
 		pos = sector*2048+offset
@@ -580,21 +597,9 @@ class XisoExtractor:
 		#print "%11d entry: %40s %s" % (pos, filename, "/".join(folders))
 		
 		if (attributes & FILE_DIR > 0) and (filename_size>0):
-			# browse folder
-			#self.writer.mkdir(filename)
-			#if not self.writer.chdir(filename):
-			#	raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
-
-			#print newsector*2048, "/", filename
-			
 			nfolders = folders[:]
 			nfolders.append(filename)
-			print "mkdir: ", filename
-			
-			#self.current_folders = nfolders
 			self.sector_list.append( (newsector*2048, newsector, 0, "entry", filename, 0, nfolders) )
-			#self.browse_folder( newsector, 0 )
-			#self.writer.chdir("..")
 		else:
 			# write file
 			if filename:
@@ -609,8 +614,6 @@ class XisoExtractor:
 		if ltable > 0:
 			self.sector_list.append( ( sector*2048+ltable ,sector, ltable*4, "entry", "", 0, folders) )
 
-		if not (rtable or ltable):
-			print "end of folder:", "/".join(folders)
 
 	def browse_sector(self):
 		while self.sector_list:
@@ -624,7 +627,10 @@ class XisoExtractor:
 			if type == "file":
 				self.browse_file(sector, filename, size, folders)
 		
+			if self.canceled:
+				return
 
+			
 	def browse_folder_UNUSED(self, sector, offset):
 		# browse an iso folder entry
 
@@ -729,6 +735,11 @@ class XisoExtractor:
 
 	def parse(self,iso_name):
 		# only parse iso
+		if is_archive(iso_name):
+			self.size = 2
+			self.files = 1
+			return  
+			
 		self.write_file = self.write_file_parse
 		return self.parse_internal(iso_name)
 
@@ -1025,7 +1036,7 @@ class DialogMain(Window):
 
 		# init progress dialog
 		progress = DialogProgress()
-		progress.set_current_operation(_("Extracting Archive"))
+		"""progress.set_current_operation(_("Extracting Archive"))
 		progress.set_current_file("This can take several minutes", 0, 0)
 		gtk_iteration()
 
@@ -1040,7 +1051,8 @@ class DialogMain(Window):
 				gtk_iteration()
 				time.sleep(0.1)
 			filename = self.extracted_filename
-
+		"""
+		
 		progress.set_current_operation(_("Parsing"))
 		progress.set_current_file("",0,0)
 		gtk_iteration()
@@ -1250,15 +1262,15 @@ def excepthook(type, value, tb):
 
 if __name__ == "__main__":
 
-	def _(str):
+	"""def _(str):
 		return str
 
 	xiso = XisoExtractor(NullWriter())
-	xiso.parse("doomsday.iso")
-
+	xiso.parse("ford.iso")
+	print xiso.xbe_name
 	
 
-	sys.exit()
+	sys.exit()"""
 
 
 	sys.excepthook = excepthook
