@@ -161,7 +161,7 @@ class GZipExtractor (ArchiveExtractor):
 """
 
 class FileReader:
-	patterns = (".iso")
+	patterns = (".iso",)
 	archive = False
 	def __init__(self, filename):
 		self.file = open(filename,"rb")
@@ -248,7 +248,8 @@ def create_reader(filename):
 		for pattern in reader.patterns:
 			if ext.lower() == pattern:
 				return reader(filename)
-	return FileReader(filename)
+	raise IOError
+	return None #FileReader(filename)
 
 def is_archive(filename):
 	root, ext = os.path.splitext(filename)
@@ -564,20 +565,47 @@ class XisoExtractor:
 
 		#self.canceled = True
 
+	def handle_folders(self, new_folders):
+		
+		current_folders = self.current_folders
+		
+		delta = len(current_folders) - len(new_folders)	
+		if delta > 0:
+			for i in range(delta):
+				new_folders.append("")
+		if delta < 0:
+			for i in range(-delta):
+				current_folders.append("")
+
+		##print  "/".join(current_folders), "/".join(new_folders)
+
+		current = current_folders[:]
+		new = new_folders[:]
+
+		for i in range(len(new)):
+			n = new[0]
+			c = current[0]
+			if n == c:
+				new.pop(0)
+				current.pop(0)
+			else:
+				break
+
+		for i in current:
+			if i:
+				self.writer.chdir("..")
+		
+		for i in new:
+			if i:
+				self.writer.mkdir(i)
+				if not self.writer.chdir(i):
+					raise ExtractError(_("<b>Cannot change to directory:</b>%s") % i)
+		self.current_folders = new_folders
 
 	def browse_file(self, sector, filename, size, folders):
 	
-		if len(folders) > len(self.current_folders):
-			folder = folders[-1]
-			self.writer.mkdir(folder)
-			if not self.writer.chdir(folder):
-				raise ExtractError(_("<b>Cannot change to directory:</b>%s") % folder)
-		if len(folders) < len(self.current_folders):
-			self.writer.chdir("..")
-	
-		print "%11d file:  %40s (%10d)" % (sector*2048, filename, size)
-				
-		self.current_folders = folders
+		self.handle_folders(folders)
+		##print "%11d file:  %40s (%10d)" % (sector*2048, filename, size)
 			
 		self.write_file(filename, size, sector)
 
@@ -599,6 +627,7 @@ class XisoExtractor:
 		if (attributes & FILE_DIR > 0) and (filename_size>0):
 			nfolders = folders[:]
 			nfolders.append(filename)
+			#print "/", filename
 			self.sector_list.append( (newsector*2048, newsector, 0, "entry", filename, 0, nfolders) )
 		else:
 			# write file
@@ -676,7 +705,6 @@ class XisoExtractor:
 					#	raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
 
 					#print newsector*2048, "/", filename
-					
 					folder_list.append( (newsector, filename) )
 					#self.browse_folder( newsector, 0 )
 					#self.writer.chdir("..")
@@ -767,7 +795,7 @@ class XisoExtractor:
 		try:
 			self.iso = create_reader(iso_name)
 		except IOError:
-			return _("<b>Cannot open '%s'</b>") % iso_name
+			return _("<b>Cannot open file</b>")
 
 		signature = "\x4d\x49\x43\x52\x4f\x53\x4f\x46\x54\x2a\x58\x42\x4f\x58\x2a\x4d\x45\x44\x49\x41"
 
@@ -1261,18 +1289,19 @@ def excepthook(type, value, tb):
 	sys.exit(1)
 
 
+
+
 if __name__ == "__main__":
 
 	"""def _(str):
 		return str
 
 	xiso = XisoExtractor(NullWriter())
-	xiso.parse("ford.iso")
+	xiso.parse("forza.iso")
 	print xiso.xbe_name
-	
 
-	sys.exit()"""
-
+	sys.exit()
+"""
 
 	sys.excepthook = excepthook
 	name = "gxiso"
