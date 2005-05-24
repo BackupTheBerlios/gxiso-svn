@@ -164,6 +164,7 @@ class FileReader:
 	patterns = (".iso",)
 	archive = False
 	def __init__(self, filename):
+		self.size = os.path.getsize(filename)
 		self.file = open(filename,"rb")
 		self.position = 0
 		self.skipped = 0
@@ -205,7 +206,9 @@ class RarReader:
 		iso_name = iso[0]
 		print "found iso in rar:", iso_name
 		
-		self.stream = os.popen( 'rar p -inul %s "%s"' % (filename, iso_name))
+		self.size = int(iso[1])
+		
+		self.stream = os.popen( 'rar p -inul %s "%s"' % (filename, iso_name), "r",1)
 		
 	def read(self, size):
 		#print "reading:", size 
@@ -605,8 +608,8 @@ class XisoExtractor:
 	def browse_file(self, sector, filename, size, folders):
 	
 		self.handle_folders(folders)
-		##print "%11d file:  %40s (%10d)" % (sector*2048, filename, size)
-			
+		#print "%11d file:  %40s (%10d)" % (sector*2048, filename, size)
+		self.files += 1
 		self.write_file(filename, size, sector)
 
 	def browse_entry(self, sector, offset, folders):
@@ -633,6 +636,7 @@ class XisoExtractor:
 			# write file
 			if filename:
 				self.size  = self.size + filesize
+				self.total_files += 1
 				self.sector_list.append( (newsector*2048, newsector, 0, "file", filename, filesize, folders) )
 			else:
 				log("warning: file without filename (offset:%d ,size:%d)" % \
@@ -658,86 +662,7 @@ class XisoExtractor:
 		
 			if self.canceled:
 				return
-
 			
-	def browse_folder_UNUSED(self, sector, offset):
-		# browse an iso folder entry
-
-		file_list = [ (sector, offset) ]
-
-		folder_list = []
-
-		global current_sector
-
-		while file_list:
-			sector, offset = file_list.pop()
-
-			if self.canceled:
-				return
-
-			pos = sector*2048+offset
-			
-			# jump to sector
-			self.iso.seek(pos)
-
-			if pos < current_sector:
-				print "*** non continous sectors! s=", pos, current_sector
-
-			# read file header
-			ltable, rtable, newsector, filesize, attributes, filename_size \
-			= read_unpack(self.iso, "<HHLLBB")
-
-			# read file name
-			filename = self.iso.read(filename_size)
-
-			#print "* pos: ", pos, "->", sector, "|", filename
-	
-			global dir_str
-			dir_str+="%30s %8d\n" % (filename, sector)
-	
-			self.files = self.files + 1
-
-			if attributes & FILE_DIR > 0:
-				if filename_size > 0:
-					# browse folder
-					#self.writer.mkdir(filename)
-					#if not self.writer.chdir(filename):
-					#	raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
-
-					#print newsector*2048, "/", filename
-					folder_list.append( (newsector, filename) )
-					#self.browse_folder( newsector, 0 )
-					#self.writer.chdir("..")
-			else:
-				# write file
-				if filename:
-					self.size  = self.size + filesize
-					self.write_file(filename, filesize, newsector);
-					global file_str
-					file_str+="%30s %8d\n" % (filename, newsector)
-					print newsector, filename, filesize
-				else:
-					log("warning: file without filename (offset:%d ,size:%d)" % \
-							(newsector, filesize) )
-
-			if rtable > 0:
-				file_list.append( (sector, rtable*4) )
-			if ltable > 0:
-				file_list.append( (sector, ltable*4) )
-			
-			#if s != current_sector: print  pos, filename , filesize#, ltable*4+2048*sector, rtable*4+2048*sector
-			current_sector = pos
-		
-		while folder_list:
-			sector,filename = folder_list.pop(0)
-			self.writer.mkdir(filename)
-			if not self.writer.chdir(filename):
-				raise ExtractError(_("<b>Cannot change to directory:</b>%s") % filename)
-			#print sector*2048, "/", filename 
-			self.browse_folder(sector, 0)
-			self.writer.chdir("..")
-			
-		return
 
 	def browse_start(self, sector):
 
@@ -767,7 +692,11 @@ class XisoExtractor:
 			self.size = 2
 			self.files = 1
 			return  
-			
+	
+		self.size=0
+		self.files=0
+		#return ##
+	
 		self.write_file = self.write_file_parse
 		return self.parse_internal(iso_name)
 
@@ -777,6 +706,7 @@ class XisoExtractor:
 		self.files = 0
 		self.size  = 0
 		self.write_position=0
+		self.total_files = 0
 
 		log("opening xiso: "+iso_name);
 
@@ -820,7 +750,6 @@ class XisoExtractor:
 
 		# and start extracting files
 		self.browse_start(root_sector)
-
 		self.iso.close()
 
 		return None
@@ -1127,7 +1056,7 @@ class DialogMain(Window):
 		previous_position = 0
 		time_inactive = 0.0
 
-		while xiso.active:
+		while xiso.active and not xiso.canceled:
 
 			if xiso.write_position == 0:
 				# still not writing
@@ -1138,9 +1067,10 @@ class DialogMain(Window):
 					progress.set_current_operation(operation)
 					operation = None
 				# update progress
-				fraction = float(xiso.write_position)/float(total_size)
-				progress.set_current_file(xiso.current_file, xiso.files, total_files)
-				progress.set_fraction(fraction)
+				if xiso.iso.size:
+					fraction = float(xiso.write_position)/float(xiso.iso.size)
+					progress.set_current_file(xiso.current_file, xiso.files, xiso.total_files)
+					progress.set_fraction(fraction)
 
 				# detect transfer timeout
 				if xiso.write_position == previous_position:
@@ -1167,9 +1097,9 @@ class DialogMain(Window):
 		progress.stop()
 
 		# remove tmp file
-		if self.extracted_filename:
-			os.unlink(self.extracted_filename)
-			self.extracted_filename = None
+		#if self.extracted_filename:
+		#	os.unlink(self.extracted_filename)
+		#	self.extracted_filename = None
 
 	def on_button_defaults_clicked(self, widget):
 		self.settings = self.default_settings
