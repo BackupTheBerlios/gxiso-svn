@@ -266,6 +266,17 @@ def is_archive(filename):
 					return True
 	return False
 
+def format_speed(speed)
+	"""
+	convert a speed in bytes per second in 
+	"""
+	speed = speed/1024
+
+	if speed > 1024:
+		return "%d MiB/s" % speed/1024
+	else:
+		return "%d KiB/s" % speed
+
 
 
 """
@@ -791,6 +802,7 @@ class DialogProgress(Window):
 		self.paused = False
 		self.pausetime = 0
 		self.current_file = ""
+		self.current_speed = 0
 
 	def stop(self):
 		self.ui_dialog_progress.hide_all()
@@ -798,10 +810,13 @@ class DialogProgress(Window):
 	def set_current_operation(self, operation):
 		self.ui_label_operation.set_markup("<b>%s</b>" % operation)
 
-	def set_current_file(self, filename, number, total):
+	def set_current_file(self, filename):
 		self.ui_label_detail.set_markup("<i>%s</i>" % filename)
 		self.current_file = number
 		self.total_files = total
+
+	def set_current_speed(self, speed)
+		self.current_speed = speed
 
 	def pulse(self):
 		self.ui_progressbar.pulse()
@@ -824,8 +839,8 @@ class DialogProgress(Window):
 		if self.paused:
 			text = _("Paused")
 
-		self.ui_progressbar.set_text(_("File %d/%d, %s") %
-			(self.current_file, self.total_files, text))
+		self.ui_progressbar.set_text(_("%s, %s") %
+			(format_speed(self.current_speed), text))
 
 	def on_button_pause_clicked(self, widget):
 		self.paused = not self.paused
@@ -1055,6 +1070,8 @@ class DialogMain(Window):
 
 		previous_position = 0
 		time_inactive = 0.0
+		
+		previous_position = 0
 
 		while xiso.active and not xiso.canceled:
 
@@ -1069,7 +1086,10 @@ class DialogMain(Window):
 				# update progress
 				if xiso.iso.size:
 					fraction = float(xiso.write_position)/float(xiso.iso.size)
-					progress.set_current_file(xiso.current_file, xiso.files, xiso.total_files)
+					progress.set_current_file(xiso.current_file)
+					speed = (xiso.write_position - previous_position)/0.1
+					previous_position = xiso.write_position
+					progress.set_current_speed(speed)
 					progress.set_fraction(fraction)
 
 				# detect transfer timeout
