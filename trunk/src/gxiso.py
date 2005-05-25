@@ -266,18 +266,6 @@ def is_archive(filename):
 					return True
 	return False
 
-def format_speed(speed)
-	"""
-	convert a speed in bytes per second in 
-	"""
-	speed = speed/1024
-
-	if speed > 1024:
-		return "%d MiB/s" % speed/1024
-	else:
-		return "%d KiB/s" % speed
-
-
 
 """
 extractors = (
@@ -812,18 +800,16 @@ class DialogProgress(Window):
 
 	def set_current_file(self, filename):
 		self.ui_label_detail.set_markup("<i>%s</i>" % filename)
-		self.current_file = number
-		self.total_files = total
+		#self.current_file = number
+		#self.total_files = total
 
-	def set_current_speed(self, speed)
+	def set_current_speed(self, speed):
 		self.current_speed = speed
 
 	def pulse(self):
 		self.ui_progressbar.pulse()
 
 	def set_fraction(self, fraction):
-		if self.paused: return
-
 		self.ui_progressbar.set_fraction(fraction)
 		now=time.time()
 		if fraction<0.01: fraction = 0.01
@@ -839,8 +825,8 @@ class DialogProgress(Window):
 		if self.paused:
 			text = _("Paused")
 
-		self.ui_progressbar.set_text(_("%s, %s") %
-			(format_speed(self.current_speed), text))
+		self.ui_progressbar.set_text(_("%.3f MiB/s, %s") %
+			(self.current_speed/(1024*1024.0), text))
 
 	def on_button_pause_clicked(self, widget):
 		self.paused = not self.paused
@@ -964,7 +950,7 @@ class DialogMain(Window):
 			self.xbe_name = xiso.xbe_name
 			self.ui_label_iso_infos.set_markup(_("Title name: <b>%s</b> (%d MB)") %
 			(self.xbe_name, os.path.getsize(filename)/(1024*1024)) )
-			if self.ui_entry_folder.get_text() != "":
+			if self.ui_entry_folder.get_text() and self.xbe_name != "":
 				self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
 
 	def xboxify_filename(self, filename):
@@ -1026,7 +1012,7 @@ class DialogMain(Window):
 		"""
 		
 		progress.set_current_operation(_("Parsing"))
-		progress.set_current_file("",0,0)
+		progress.set_current_file("")
 		gtk_iteration()
 
 		# parse info from xiso
@@ -1072,6 +1058,7 @@ class DialogMain(Window):
 		time_inactive = 0.0
 		
 		previous_position = 0
+		mean_speed = 0
 
 		while xiso.active and not xiso.canceled:
 
@@ -1087,9 +1074,9 @@ class DialogMain(Window):
 				if xiso.iso.size:
 					fraction = float(xiso.write_position)/float(xiso.iso.size)
 					progress.set_current_file(xiso.current_file)
-					speed = (xiso.write_position - previous_position)/0.1
-					previous_position = xiso.write_position
-					progress.set_current_speed(speed)
+					mean_speed = xiso.write_position/(time.time()-progress.starttime)
+					if not xiso.paused:
+						progress.set_current_speed(mean_speed)
 					progress.set_fraction(fraction)
 
 				# detect transfer timeout
@@ -1106,14 +1093,15 @@ class DialogMain(Window):
 			xiso.canceled = progress.canceled
 			xiso.paused = progress.paused
 
+
 			# and let our working thread be called
 			gtk_iteration()
 			time.sleep(0.1)
 
 		if xiso.error:
 			show_error(xiso.error)
-		else:
-			log( "done! (in %ds, %.2f MiB/s)" % (time.time()-progress.starttime,total_size/(time.time()-progress.starttime)/(1024*1024)))
+		elif not xiso.canceled:
+			log( "done! (in %ds, %.3f MiB/s)" % (time.time()-progress.starttime,total_size/(time.time()-progress.starttime)/(1024*1024.0)))
 		progress.stop()
 
 		# remove tmp file
