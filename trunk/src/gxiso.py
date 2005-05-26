@@ -195,9 +195,9 @@ class RarReader:
 		self.skipped = 0
 		
 		print "opening rar:", filename
-		list_stream = os.popen("rar l %s" % filename)
+		list_stream = os.popen("rar v %s" % filename)
 		list = list_stream.read()
-		results = re.findall(r" (.+) (\d+) (\d+)",list)
+		results = re.findall(r" (.+)\s+(\d+) (\d+)",list)
 
 		# TODO: handle folders!
 		iso = [file for file in results if ".iso" in file[0].lower()]
@@ -308,7 +308,7 @@ class FileWriter:
 			pass
 		# TODO: we must check for an error !
 		self.chdir(self.base_folder)
-		print self.base_folder ##
+		#print self.base_folder ##
 
 	def open(self, filename):
 		self.file = open(filename,"wb")
