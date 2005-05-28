@@ -51,7 +51,7 @@ def gtk_iteration():
 
 def read_unpack(file, format):
 	# read and unpack a structure as in struct.unpack
-	buffer = file.read(struct.calcsize(format))
+i	buffer = file.read(struct.calcsize(format))
 	return struct.unpack(format,buffer)
 
 class ExtractError(Exception):
@@ -110,6 +110,17 @@ except AttributeError:
 
 total_size=0
 
+
+
+class ReaderError(Exception):
+	def __init__(self, message):
+		self.message = message
+	def __str__(self):
+		return repr(self.message)
+
+
+
+
 """import bz2
 import gzip
 
@@ -165,7 +176,10 @@ class FileReader:
 	archive = False
 	def __init__(self, filename):
 		self.size = os.path.getsize(filename)
-		self.file = open(filename,"rb")
+		try:
+			self.file = open(filename,"rb")
+		except IOError:
+			raise ReaderError(_("Cannot read file:'%s'") % filename)
 		self.position = 0
 		self.skipped = 0
 
@@ -194,20 +208,32 @@ class RarReader:
 		self.position = 0
 		self.skipped = 0
 		
-		print "opening rar:", filename
+		try:
+			f = file(filename, "r")
+			f.close()
+		except IOError:
+			raise ReaderError(_("Cannot open archive: '%s'") % filename)
+		# detecting unrar
+		rar_list=("rar","unrar")
+		unrar = None
+		for i in rar_list:
+			if os.popen(rar).read():
+				unrar = "rar"
+		if not unrar:
+			raise ReaderError(_("Cannot find a RAR extractor"))
+		
 		list_stream = os.popen("rar v %s" % filename)
 		list = list_stream.read()
 		results = re.findall(r" (.+)\s+(\d+) (\d+)",list)
 
-		# TODO: handle folders!
 		iso = [file for file in results if ".iso" in file[0].lower()]
 		# TODO: check for no iso in rar!
+		if not iso:
+			raise ReaderError(_("Cannot find a .iso in RAR: '%s'") % filename)
+		
 		iso = iso[0]
 		iso_name = iso[0]
-		print "found iso in rar:", iso_name
-		
 		self.size = int(iso[1])
-		
 		self.stream = os.popen( 'rar p -inul %s "%s"' % (filename, iso_name), "r",1)
 		
 	def read(self, size):
@@ -723,8 +749,8 @@ class XisoExtractor:
 
 		try:
 			self.iso = create_reader(iso_name)
-		except IOError:
-			return _("<b>Cannot open file</b>")
+		except ReaderError, error:
+			return _("<b>Cannot open iso:</b>") % error
 
 		signature = "\x4d\x49\x43\x52\x4f\x53\x4f\x46\x54\x2a\x58\x42\x4f\x58\x2a\x4d\x45\x44\x49\x41"
 
