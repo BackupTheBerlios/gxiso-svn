@@ -51,14 +51,14 @@ def gtk_iteration():
 
 def read_unpack(file, format):
 	# read and unpack a structure as in struct.unpack
-i	buffer = file.read(struct.calcsize(format))
+	buffer = file.read(struct.calcsize(format))
 	return struct.unpack(format,buffer)
 
 class ExtractError(Exception):
 	def __init__(self, message):
 		self.message = message
 	def __str__(self):
-		return repr(self.message)
+		return str(self.message)
 
 def show_error(message):
 	# display a message dialog with an error message
@@ -116,7 +116,7 @@ class ReaderError(Exception):
 	def __init__(self, message):
 		self.message = message
 	def __str__(self):
-		return repr(self.message)
+		return str(self.message)
 
 
 
@@ -204,37 +204,38 @@ class FileReader:
 class RarReader:
 	patterns = (".rar", ".000", ".001")
 	archive = True
+	
 	def __init__(self, filename):
 		self.position = 0
 		self.skipped = 0
 		
 		try:
-			f = file(filename, "r")
+			f = open(filename, "r")
 			f.close()
 		except IOError:
 			raise ReaderError(_("Cannot open archive: '%s'") % filename)
 		# detecting unrar
-		rar_list=("rar","unrar")
+		unrar_list=("rar","unrar")
 		unrar = None
-		for i in rar_list:
-			if os.popen(rar).read():
-				unrar = "rar"
+		for i in unrar_list:
+			if os.popen(i).read():
+				unrar = i
 		if not unrar:
 			raise ReaderError(_("Cannot find a RAR extractor"))
 		
-		list_stream = os.popen("rar v %s" % filename)
+		list_stream = os.popen('%s v "%s"' % (unrar, filename) )
 		list = list_stream.read()
 		results = re.findall(r" (.+)\s+(\d+) (\d+)",list)
 
 		iso = [file for file in results if ".iso" in file[0].lower()]
 		# TODO: check for no iso in rar!
 		if not iso:
-			raise ReaderError(_("Cannot find a .iso in RAR: '%s'") % filename)
+			raise ReaderError(_("Cannot find a .iso in RAR:\n%s") % filename)
 		
 		iso = iso[0]
 		iso_name = iso[0]
 		self.size = int(iso[1])
-		self.stream = os.popen( 'rar p -inul %s "%s"' % (filename, iso_name), "r",1)
+		self.stream = os.popen( '%s p -inul %s "%s"' % (unrar, filename, iso_name), "r",1)
 		
 	def read(self, size):
 		#print "reading:", size 
@@ -291,6 +292,13 @@ def is_archive(filename):
 				if reader.archive:
 					return True
 	return False
+
+def format_speed(speed):
+	"""
+	convert a speed in bytes per second in 
+	"""
+	speed = speed/(1024.0*1024.0)
+	return "%.3f MiB/s" % speed
 
 
 """
@@ -354,6 +362,12 @@ class FileWriter:
 		except OSError:
 			return False
 		return True
+	def rename(self, old, new):
+		try: 
+			os.rename(old, new)
+			return True
+		except OSError:
+			return False
 	def quit(self):
 		pass
 
@@ -363,6 +377,7 @@ class FTPWriter:
 		self.login = login
 		self.password = password
 		self.base_folder = base_folder
+		self.buffer = None
 
 	def makedirs(self, path):
 		# create all folders in path
@@ -386,7 +401,7 @@ class FTPWriter:
 			if details.__class__ == socket.error:
 				details = details[1]
 
-			raise ExtractError(_("<b>Cannot connect to xbox:\n</b>\n"+str(details)))
+			raise ExtractError(_("<b>Cannot connect to xbox:</b>\n"+str(details)))
 
 		try:
 			log("Disabling FREEROOTSPACE on Avalaunch")
@@ -473,6 +488,18 @@ class FTPWriter:
 			return False
 		return True
 
+	def rename(self, old, new):
+		try:
+			self.session.rename(old, new)
+			return True
+		except ftplib.error_reply:
+			pass
+		except ftplib.error_perm:
+			return False
+		except ftplib.error_perm:
+			return False
+		
+
 	def read(self, size):
 		# called by ftp storbinary
 		while True:
@@ -492,6 +519,8 @@ class FTPWriter:
 		self.buffer = self.buffer[size:]
 		self.lock.release()
 		return buffer
+
+		
 
 class FileAndFTPWriter:
 	def __init__(self, local_folder, ip, login, password, ftp_folder):
@@ -515,6 +544,12 @@ class FileAndFTPWriter:
 	def chdir(self, name):
 		self.file.chdir(name)
 		self.ftp.chdir(name)
+	def rename(self, old, new):
+		l = self.file.rename(old, new)
+		f = self.ftp.rename(old, new)
+		if l and f:
+			return True
+		return False
 	def quit(self):
 		self.file.quit()
 		self.ftp.quit()
@@ -523,6 +558,36 @@ class FileAndFTPWriter:
 dir_str = ""
 file_str= ""
 
+
+def ftp_delete_folder__(session, folder):
+	session.cwd(folder)
+	list = []
+	session.retrlines('LIST -a', list.append)
+
+
+	for entry in list:
+		#print entry
+		is_folder = False
+		
+		if entry[0] == "d":
+			is_folder = True
+		
+		entry = entry.split(None, 8)
+		filename = entry[8]
+		if is_folder:
+			ftp_delete_folder__(session, filename)
+			session.cwd("..")
+			session.rmd(filename)
+		else:
+			session.delete(filename)
+	
+def ftp_delete_folder(session, base_folder, folder_to_delete):
+	try:
+		ftp_delete_folder__(session, "/".join( (base_folder,folder_to_delete) ))
+		session.cwd(base_folder)
+		session.rmd(folder_to_delete)	
+	except ftplib.error_perm:
+		print "error while deleting:", "/".join( (base_folder,folder_to_delete) )
 
 class XisoExtractor:
 
@@ -539,18 +604,26 @@ class XisoExtractor:
 		self.error = None
 		self.active=True
 
-	def write_file_parse(self,filename,size,sector):
-		# do nothing but try to read name of main xbe
-		if filename.lower() == "default.xbe":
-			# search xbe real name
-			self.parse_xbe(sector)
+	def parse_xbe(self):
+		readsize = 0x190 + 80
+		buffer = self.iso.read(readsize)
+		name = buffer[-80:]
 
-			##
-		else:
-			self.iso.seek(sector*2048)
+		self.xbe_name = ""
 
+		if not name:
+			name = ""
+				
+		# TODO: better solution for wide chars
+		for i in range(len(name)):
+			if name[i] != "\x00":
+				self.xbe_name += name[i]
+		print "detected xbename:", self.xbe_name	
+
+		self.writer.write(buffer);
+		self.write_position += readsize
 		
-	def write_file_real(self,filename,size,sector):
+	def write_file(self,filename,size,sector):
 		# actually write or upload the file
 		self.current_file = filename
 
@@ -559,11 +632,16 @@ class XisoExtractor:
 
 		buffer = "-"
 		try:
-			while buffer != "":
+			if filename.lower() == "default.xbe":
+				# search xbe real name
+				self.parse_xbe()
+				size -= 0x190 + 80
+				
+			while buffer:
 				readsize = min(size,BUFFER_SIZE)
 				buffer = self.iso.read(readsize)
 				self.writer.write(buffer);
-				size = size - readsize
+				size -= readsize
 				self.write_position += readsize
 				if size<0:
 					break
@@ -573,25 +651,6 @@ class XisoExtractor:
 					time.sleep(0.1)
 		finally:
 			self.writer.close()
-
-	def parse_xbe(self,sector):
-		# search for xbe name
-
-		self.iso.seek(sector*2048)
-		self.iso.skip(0x190)
-		name = self.iso.read(80)
-
-		self.xbe_name = ""
-
-		if not name:
-			return
-
-		# TODO: better solution for wide chars
-		for i in range(len(name)):
-			if name[i] != "\x00":
-				self.xbe_name += name[i]
-
-		#self.canceled = True
 
 	def handle_folders(self, new_folders):
 		
@@ -701,9 +760,9 @@ class XisoExtractor:
 
 		self.active=True
 		saved_folder = os.getcwd()
+		self.error = None
 		try:
 			self.writer.init()
-			self.write_file = self.write_file_real
 			self.parse_internal(iso_name)
 			self.writer.quit()
 		except ExtractError, details:
@@ -711,7 +770,7 @@ class XisoExtractor:
 		os.chdir(saved_folder)
 		self.active=False
 
-	def parse(self,iso_name):
+	def parse_UNUSED(self,iso_name):
 		# only parse iso
 		if is_archive(iso_name):
 			self.size = 2
@@ -739,18 +798,18 @@ class XisoExtractor:
 		try:
 			test = file(iso_name, "rb")
 		except IOError:
-			return _("<b>Cannot read iso</b>")
+			raise ExtractError( _("<b>Cannot read iso</b>") )
 		
 		try:
 			test.seek(0,SEEK_END)
 		except IOError:
-			return _("<b>Cannot read whole iso (too big ?)</b>")
+			raise ExtractError( _("<b>Cannot read whole iso (too big ?)</b>") )
 		test.close()
 
 		try:
 			self.iso = create_reader(iso_name)
 		except ReaderError, error:
-			return _("<b>Cannot open iso:</b>") % error
+			raise ExtractError( _("<b>Cannot open iso:</b>\n%s") % error )
 
 		signature = "\x4d\x49\x43\x52\x4f\x53\x4f\x46\x54\x2a\x58\x42\x4f\x58\x2a\x4d\x45\x44\x49\x41"
 
@@ -760,7 +819,7 @@ class XisoExtractor:
 		# read and verify header
 		header = self.iso.read(0x14)
 		if header != signature:
-			return _("<b>Not a valid xbox iso image</b>")
+			raise ExtractError( _("<b>Not a valid xbox iso image</b>") )
 
 		# read root sector address
 		root_sector, = read_unpack(self.iso, "<L")
@@ -771,7 +830,7 @@ class XisoExtractor:
 		# read and verify header
 		header = self.iso.read(0x14)
 		if header != signature:
-			return _("<b>Not a valid xbox iso image</b>")
+			raise ExtractError( _("<b>Not a valid xbox iso image</b>") )
 
 		# and start extracting files
 		self.browse_start(root_sector)
@@ -838,9 +897,10 @@ class DialogProgress(Window):
 	def set_fraction(self, fraction):
 		self.ui_progressbar.set_fraction(fraction)
 		now=time.time()
-		if fraction<0.01: fraction = 0.01
-		remaining = int((now-self.starttime) / fraction-(now-self.starttime))
-		minutes = remaining/60
+		if fraction<0.01: 
+			fraction = 0.01
+		remaining = ((now-self.starttime) / fraction-(now-self.starttime))
+		minutes = remaining/60.0
 		if minutes<1:
 			text = _("less than one minute left.")
 		elif minutes==1:
@@ -968,7 +1028,7 @@ class DialogMain(Window):
 
 	def get_iso_infos(self, filename):
 		xiso = XisoExtractor(NullWriter())
-		error = xiso.parse(filename)
+		error = xiso.extract(filename)
 		if error:
 			self.xbe_name = None
 			self.ui_label_iso_infos.set_markup(error)
@@ -984,15 +1044,33 @@ class DialogMain(Window):
 			".",
 			",",
 			";",
+			":",
 		)
+		
+		print repr(filename)
+		
 		name = filename[:40]
 		for f in filters:
 			name = name.replace(f," ")
 		return name
 
-	def extract_archive(self, extractor, filename):
+	def extract_archive_UNUSED(self, extractor, filename):
 		self.extracted_filename = extractor.extract(filename)
 		self.extracting = False
+
+	def create_tmp_folder(self, ip, login, password, folder):
+		
+		writer = FTPWriter(ip, login, password, folder)
+		writer.init()
+		for i in range(1000):
+			name = "gxiso%03d" % i
+			if writer.mkdir(name):
+				break;
+				
+		writer.close()
+		return name
+
+
 
 	def extract_xiso(self):
 		self.extracted_filename = None
@@ -1007,43 +1085,35 @@ class DialogMain(Window):
 		if ftp_folder[-1] != "/":
 			ftp_folder += "/"
 
-		if self.xbe_name:
-			ftp_folder += self.xboxify_filename(self.xbe_name)
-		else:
-			name = os.path.basename(self.iso_name)
-			name, ext = os.path.splitext(name)
-			ftp_folder += self.xboxify_filename(name)
-
 		ftp_ip = self.ui_entry_xbox_address.get_text()
 		ftp_login = self.ui_entry_xbox_login.get_text()
 		ftp_password = self.ui_entry_xbox_password.get_text()
 
+		extract = self.ui_checkbutton_extract.get_active()
+		upload = self.ui_checkbutton_upload.get_active()
+
+		rename = None
+		if self.xbe_name:
+			ftp_folder += self.xboxify_filename(self.xbe_name)
+		else:
+			name = self.create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
+			if upload:
+				rename = name
+				print "creating temp folder:", name
+				ftp_base_folder = ftp_folder
+				tmp_folder = name
+			ftp_folder += name
+
+
 		# init progress dialog
 		progress = DialogProgress()
-		"""progress.set_current_operation(_("Extracting Archive"))
-		progress.set_current_file("This can take several minutes", 0, 0)
-		gtk_iteration()
-
-		extractor = extractor_factory(filename)
-		if extractor:
-			self.extracting = True
-			#self.extract_archive(extractor,filename)
-			thread.start_new_thread(self.extract_archive, (extractor,filename))
-
-			while self.extracting:
-				progress.pulse()
-				gtk_iteration()
-				time.sleep(0.1)
-			filename = self.extracted_filename
-		"""
-		
 		progress.set_current_operation(_("Parsing"))
 		progress.set_current_file("")
 		gtk_iteration()
 
 		# parse info from xiso
-		xiso = XisoExtractor(NullWriter())
-		error = xiso.parse(filename)
+		"""xiso = XisoExtractor(NullWriter())
+		error = xiso.extract(filename)
 		if error:
 			progress.stop()
 			gtk_iteration()
@@ -1051,11 +1121,10 @@ class DialogMain(Window):
 			return
 		total_size = xiso.size
 		total_files = xiso.files
-
+		"""
+		
 		# select writer plugin
 		writer = NullWriter()
-		extract = self.ui_checkbutton_extract.get_active()
-		upload = self.ui_checkbutton_upload.get_active()
 		if extract and not upload:
 			writer = FileWriter(local_folder)
 			operation = _("Extracting")
@@ -1079,15 +1148,15 @@ class DialogMain(Window):
 
 		xiso = XisoExtractor(writer)
 		thread.start_new_thread(xiso.extract, (filename,))
+		#xiso.extract(filename)
 
 		previous_position = 0
 		time_inactive = 0.0
-		
 		previous_position = 0
 		mean_speed = 0
+		delay = 0
 
 		while xiso.active and not xiso.canceled:
-
 			if xiso.write_position == 0:
 				# still not writing
 				progress.pulse()
@@ -1103,7 +1172,10 @@ class DialogMain(Window):
 					mean_speed = xiso.write_position/(time.time()-progress.starttime)
 					if not xiso.paused:
 						progress.set_current_speed(mean_speed)
-					progress.set_fraction(fraction)
+					delay += 0.1
+					if delay >= 1.0:
+						progress.set_fraction(fraction)
+						delay = 0
 
 				# detect transfer timeout
 				if xiso.write_position == previous_position:
@@ -1124,16 +1196,33 @@ class DialogMain(Window):
 			gtk_iteration()
 			time.sleep(0.1)
 
+			
+		
+		if rename:
+			try:
+				writer = FTPWriter(ftp_ip, ftp_login, ftp_password, ftp_folder)
+				writer.init()
+				if xiso.canceled:
+					log( "deleting: %s" % (ftp_base_folder+tmp_folder) )
+					progress.set_current_operation(_("Deleting temporary files"))
+					ftp_delete_folder(writer.session, ftp_base_folder, tmp_folder)
+				elif xiso.xbe_name:
+					writer.chdir(ftp_base_folder)
+					newname = self.xboxify_filename(xiso.xbe_name)
+					log( "deleting: %s" % (ftp_base_folder+newname) )
+					ftp_delete_folder(writer.session, ftp_base_folder, newname)
+					log( "renaming: %s -> %s" % (rename, newname) )
+					if not writer.rename(rename, newname):
+						show_error( _("Cannot rename <i>%s</i> to <i>%s</i>") \
+							% (rename, newname) )
+			except ExtractError, error:
+				show_error(error.message)
+
 		if xiso.error:
 			show_error(xiso.error)
 		elif not xiso.canceled:
-			log( "done! (in %ds, %.3f MiB/s)" % (time.time()-progress.starttime,total_size/(time.time()-progress.starttime)/(1024*1024.0)))
+			log( "done! (in %ds, %.3f MiB/s)" % (time.time()-progress.starttime,xiso.write_position/(time.time()-progress.starttime)/(1024*1024.0)))
 		progress.stop()
-
-		# remove tmp file
-		#if self.extracted_filename:
-		#	os.unlink(self.extracted_filename)
-		#	self.extracted_filename = None
 
 	def on_button_defaults_clicked(self, widget):
 		self.settings = self.default_settings
@@ -1156,7 +1245,7 @@ class DialogMain(Window):
 		if result == gtk.RESPONSE_OK:
 			self.iso_name = dialog.get_filename()
 			self.ui_entry_xiso.set_text(self.iso_name)
-			self.get_iso_infos(self.iso_name)
+			###self.get_iso_infos(self.iso_name)
 			if (self.xbe_name):
 				pass
 				#self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
@@ -1266,6 +1355,19 @@ if __name__ == "__main__":
 
 	sys.exit()
 """
+
+	""" ""
+	def _(str):
+		return str
+
+	ftp = FTPWriter("192.168.0.6","xbox","xbox","/g/tmp/")
+	ftp.init()
+	
+	ftp_delete_folder(ftp.session,"/g/tmp","Ruins")
+
+	sys.exit()
+	"" """
+
 
 	sys.excepthook = excepthook
 	name = "gxiso"
