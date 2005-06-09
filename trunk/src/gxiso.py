@@ -36,6 +36,9 @@ import gettext
 import pango
 import atk
 
+import bz2
+import gzip
+
 BUFFER_SIZE=1024*16
 
 SEEK_SET = 0
@@ -118,59 +121,6 @@ class ReaderError(Exception):
 	def __str__(self):
 		return str(self.message)
 
-
-
-
-"""import bz2
-import gzip
-
-class ArchiveExtractor:
-	def isValid(self, filename):
-		result = self.pattern.search(filename.lower())
-		if result:
-			print "archive format:", self.name
-			return True
-		return False
-
-class BZip2Extractor (ArchiveExtractor):
-	def __init__(self):
-		self.name = "bzip2"
-		self.pattern = re.compile(r".*\.bz2")
-
-	def extract(self, filename):
-		output = os.tmpnam()
-		print "writing:", output
-		f = file(output,"wb")
-		archive = bz2.BZ2File(filename, "r", 0)
-		buffer="1"
-		while buffer:
-			buffer = archive.read(BUFFER_SIZE)
-			f.write(buffer)
-		archive.close()
-		f.close()
-		print "done."
-		return output
-
-class GZipExtractor (ArchiveExtractor):
-	def __init__(self):
-		self.name = "gzip"
-		self.pattern = re.compile(r".*\.gz")
-
-	def extract(self, filename):
-		output = os.tmpnam()
-		print "writing:", output
-		f = file(output,"wb")
-		archive = gzip.GzipFile(filename, "r", 0)
-		buffer="1"
-		while buffer:
-			buffer = archive.read(BUFFER_SIZE)
-			f.write(buffer)
-		archive.close()
-		f.close()
-		print "done."
-		return output
-"""
-
 class FileReader:
 	patterns = (".iso",)
 	archive = False
@@ -201,8 +151,8 @@ class FileReader:
 		self.file.close()
 		print "skipped %d bytes." % self.skipped
 
-class RarReader:
-	patterns = (".rar", ".000", ".001")
+
+class GenericArchiveReader:
 	archive = True
 	
 	def __init__(self, filename):
@@ -214,6 +164,38 @@ class RarReader:
 			f.close()
 		except IOError:
 			raise ReaderError(_("Cannot open archive: '%s'") % filename)
+
+		self.create_stream(filename)
+
+	def read(self, size):
+		self.position += size
+		return self.stream.read(size)
+		
+	def skip(self, offset):
+		if offset<0:
+			sys.exit()
+		while offset:
+			n = offset
+			if (n>BUFFER_SIZE):
+				n = BUFFER_SIZE
+			offset -= n
+			self.read(n)
+			
+		self.skipped += offset
+		
+	def seek(self, position):
+		self.skip(position-self.position)
+		self.position = position
+	
+	def close(self):
+		self.stream.close()
+
+
+
+class RarReader (GenericArchiveReader):
+	patterns = (".rar", ".000", ".001", ".r00", ".r01")
+	
+	def create_stream(self, filename):
 		# detecting unrar
 		unrar_list=("rar","unrar")
 		unrar = None
@@ -236,37 +218,29 @@ class RarReader:
 		iso_name = iso[0]
 		self.size = int(iso[1])
 		self.stream = os.popen( '%s p -inul %s "%s"' % (unrar, filename, iso_name), "r",1)
-		
-	def read(self, size):
-		#print "reading:", size 
-		self.position += size
-		return self.stream.read(size)
-		
-	def skip(self, offset):
-		#print "skipping:", offset
-		if offset<0:
-			sys.exit()
-		while offset:
-			n = offset
-			if (n>BUFFER_SIZE):
-				n = BUFFER_SIZE
-			offset -= n
-			self.read(n)
-			
-		self.skipped += offset
-		
-	def seek(self, position):
-		self.skip(position-self.position)
-		self.position = position
+
+
+class GZipReader (GenericArchiveReader):
+	patterns = (".gz",)
 	
-	def close(self):
-		self.stream.close()
-		print "skipped %d bytes." % self.skipped
+	def create_stream(self, filename):
+		self.stream = gzip.GzipFile(filename, "r", 0)
+		self.size = 0
+
+
+class BZ2Reader (GenericArchiveReader):
+	patterns = (".bz2",)
+	
+	def create_stream(self, filename):
+		self.stream = bz2.BZ2File(filename, "r", 0)
+		self.size= 0
 
 
 readers = (
 	FileReader,
 	RarReader,
+	GZipReader,
+	BZ2Reader,
 )
 
 def create_reader(filename):
@@ -1096,13 +1070,13 @@ class DialogMain(Window):
 		if self.xbe_name:
 			ftp_folder += self.xboxify_filename(self.xbe_name)
 		else:
-			name = self.create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
 			if upload:
+				name = self.create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
 				rename = name
 				print "creating temp folder:", name
 				ftp_base_folder = ftp_folder
 				tmp_folder = name
-			ftp_folder += name
+				ftp_folder += name
 
 
 		# init progress dialog
@@ -1166,16 +1140,18 @@ class DialogMain(Window):
 					progress.set_current_operation(operation)
 					operation = None
 				# update progress
+				progress.set_current_file(xiso.current_file)
 				if xiso.iso.size:
-					fraction = float(xiso.write_position)/float(xiso.iso.size)
-					progress.set_current_file(xiso.current_file)
+					fraction = float(xiso.write_position)/float(:xiso.iso.size)
 					mean_speed = xiso.write_position/(time.time()-progress.starttime)
 					if not xiso.paused:
 						progress.set_current_speed(mean_speed)
 					delay += 0.1
 					if delay >= 1.0:
 						progress.set_fraction(fraction)
-						delay = 0
+					delay = 0
+				else:
+					progress.pulse()
 
 				# detect transfer timeout
 				if xiso.write_position == previous_position:
@@ -1237,8 +1213,12 @@ class DialogMain(Window):
 
 
 	def on_button_xiso_browse_clicked(self, widget):
-		dialog = CreateFileChooser(_("Open Xbox Iso"), \
-				("*.iso","*.ISO","*.gz","*.bz2","*.rar","*.000","*.001"))
+		patterns = []
+		for p in readers:
+			patterns.extend( ["*"+i.lower() for i in p.patterns] )
+			patterns.extend( ["*"+i.upper() for i in p.patterns] )
+		print patterns
+		dialog = CreateFileChooser(_("Open Xbox Iso"), patterns)
 		dialog.show_all()
 		result = dialog.run()
 		dialog.hide_all()
