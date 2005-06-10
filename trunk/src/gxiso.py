@@ -29,6 +29,8 @@ import pygtk
 
 if sys.platform != 'win32':
 	pygtk.require('2.0')
+else:
+	from _winreg import * 
 
 import gtk
 import gtk.glade
@@ -1071,7 +1073,11 @@ class DialogMain(Window):
 			ftp_folder += self.xboxify_filename(self.xbe_name)
 		else:
 			if upload:
-				name = self.create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
+				try:
+					name = self.create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
+				except ExtractError, error:
+					show_error(error.message)
+					return
 				rename = name
 				print "creating temp folder:", name
 				ftp_base_folder = ftp_folder
@@ -1130,6 +1136,8 @@ class DialogMain(Window):
 		mean_speed = 0
 		delay = 0
 
+
+
 		while xiso.active and not xiso.canceled:
 			if xiso.write_position == 0:
 				# still not writing
@@ -1142,7 +1150,7 @@ class DialogMain(Window):
 				# update progress
 				progress.set_current_file(xiso.current_file)
 				if xiso.iso.size:
-					fraction = float(xiso.write_position)/float(:xiso.iso.size)
+					fraction = float(xiso.write_position)/float(xiso.iso.size)
 					mean_speed = xiso.write_position/(time.time()-progress.starttime)
 					if not xiso.paused:
 						progress.set_current_speed(mean_speed)
@@ -1217,7 +1225,7 @@ class DialogMain(Window):
 		for p in readers:
 			patterns.extend( ["*"+i.lower() for i in p.patterns] )
 			patterns.extend( ["*"+i.upper() for i in p.patterns] )
-		print patterns
+		
 		dialog = CreateFileChooser(_("Open Xbox Iso"), patterns)
 		dialog.show_all()
 		result = dialog.run()
