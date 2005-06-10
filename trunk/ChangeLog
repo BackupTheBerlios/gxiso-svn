@@ -1,4 +1,24 @@
 # this file is generated from the subversion log. do not edit!
+2005-05-07  Gautier Portet <kassoulet gmail com>
+
+	* win32 build system fixes. ready for 1.4!
+
+2005-05-07  Gautier Portet <kassoulet gmail com>
+
+	* fixed pattern not set when browsing for iso.
+
+2005-05-06  Gautier Portet <kassoulet gmail com>
+
+	* added icons in repository, removed references to OSX since I can't manage to install a recent pygtk for now.
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* better windows icon
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* add thanks, and moved todo items to 2.0
+
 2005-05-04  Gautier Portet <kassoulet gmail com>
 
 2005-05-04  Gautier Portet <kassoulet gmail com>
