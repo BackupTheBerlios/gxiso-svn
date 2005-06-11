@@ -1149,6 +1149,7 @@ class DialogMain(Window):
 					operation = None
 				# update progress
 				progress.set_current_file(xiso.current_file)
+								
 				if xiso.iso.size:
 					fraction = float(xiso.write_position)/float(xiso.iso.size)
 					mean_speed = xiso.write_position/(time.time()-progress.starttime)
@@ -1157,7 +1158,7 @@ class DialogMain(Window):
 					delay += 0.1
 					if delay >= 1.0:
 						progress.set_fraction(fraction)
-					delay = 0
+						delay = 0
 				else:
 					progress.pulse()
 
