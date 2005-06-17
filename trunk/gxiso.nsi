@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "gXiso"
-!define PRODUCT_VERSION "1.4"
+!define PRODUCT_VERSION "1.5"
 !define PRODUCT_PUBLISHER "Kassoulet"
 !define PRODUCT_WEB_SITE "http://gxiso.berlios.de"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\gxiso.exe"
