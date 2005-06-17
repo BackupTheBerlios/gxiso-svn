@@ -30,7 +30,8 @@ import pygtk
 if sys.platform != 'win32':
 	pygtk.require('2.0')
 else:
-	from _winreg import * 
+	from _winreg import * 		import msvcrt		def win32_popen(command):		f = saved_popen(command)
+		msvcrt.setmode(f.fileno(),os.O_BINARY)		return f			saved_popen = os.popen	os.popen = win32_popen
 
 import gtk
 import gtk.glade
@@ -40,6 +41,10 @@ import atk
 
 import bz2
 import gzip
+
+
+#s = os.popen( '%s x -inul "%s" "%s"' % ("c:/Progra~1/WinRAR/Rar.exe", "test.rar", "test.iso"))
+#s.read()
 
 BUFFER_SIZE=1024*16
 
@@ -199,7 +204,7 @@ class RarReader (GenericArchiveReader):
 	
 	def create_stream(self, filename):
 		# detecting unrar
-		unrar_list=("rar","unrar")
+		unrar_list=("rar","unrar", "c:/Progra~1/WinRAR/Rar.exe")
 		unrar = None
 		for i in unrar_list:
 			if os.popen(i).read():
@@ -219,8 +224,8 @@ class RarReader (GenericArchiveReader):
 		iso = iso[0]
 		iso_name = iso[0]
 		self.size = int(iso[1])
-		self.stream = os.popen( '%s p -inul %s "%s"' % (unrar, filename, iso_name), "r",1)
-
+		self.stream = os.popen( '%s p -inul "%s" "%s"' % (unrar, filename, iso_name))
+		
 
 class GZipReader (GenericArchiveReader):
 	patterns = (".gz",)
