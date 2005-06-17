@@ -1,6 +1,6 @@
 @echo off
 
-del /F /S /Q build dist
+del /F /S /Q build dist > nul
 python.exe setup.py py2exe
 
 copy "%GTK_BASEPATH%\bin\libpng12.dll" dist\
