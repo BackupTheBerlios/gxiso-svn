@@ -1,0 +1,258 @@
+# this file is generated from the subversion log. do not edit!
+2005-06-17  Gautier Portet <kassoulet gmail com>
+
+2005-06-17  Gautier Portet <kassoulet gmail com>
+
+	* changed win32 install to 1.5
+
+2005-06-17  Gautier Portet <kassoulet gmail com>
+
+2005-06-17  Gautier Portet <kassoulet gmail com>
+
+	* win32 unrar support
+
+2005-06-11  Gautier Portet <kassoulet gmail com>
+
+	* fixed broken progress
+
+2005-06-10  Gautier Portet <kassoulet gmail com>
+
+	* preparing 1.5 release
+
+2005-06-10  Gautier Portet <kassoulet gmail com>
+
+	* fixed exception with ftp connection
+
+2005-06-09  Gautier Portet <kassoulet gmail com>
+
+	* added bz2 and gz readers
+	* fixed progress for them (I can't get their size easily)
+	* file dialog filters is now sync'ed with the readers
+	  (the patterns are taken from readers)
+
+2005-06-07  Gautier Portet <kassoulet gmail com>
+
+	* final touches for linux rar support.
+
+2005-05-28  Gautier Portet <kassoulet gmail com>
+
+	* rar extraction error handling
+
+2005-05-26  Gautier Portet <kassoulet gmail com>
+
+	* handling of folders in .rar
+
+2005-05-25  Gautier Portet <kassoulet gmail com>
+
+	* finally made the progress dialog to work
+	* and less small bugs
+
+2005-05-25  Gautier Portet <kassoulet gmail com>
+
+	* added displaying current speed in progress dialog.
+	  removed the newly broken current file/total files display
+
+2005-05-24  Gautier Portet <kassoulet gmail com>
+
+	* progress calculation changed, now will work will rar
+
+2005-05-21  Gautier Portet <kassoulet gmail com>
+
+	* changed the way folders are handled.
+	  we now have a dedicaced function to create and change
+	  to the right folder.
+
+2005-05-19  Gautier Portet <kassoulet gmail com>
+
+2005-05-19  Gautier Portet <kassoulet gmail com>
+
+	* improvements for rar support
+
+2005-05-17  Gautier Portet <kassoulet gmail com>
+
+2005-05-16  Gautier Portet <kassoulet gmail com>
+
+	* rewriting of archive management.
+	  rar support
+	  (be warned, all is currently broken)
+
+2005-05-07  Gautier Portet <kassoulet gmail com>
+
+	* win32 build system fixes. ready for 1.4!
+
+2005-05-07  Gautier Portet <kassoulet gmail com>
+
+	* fixed pattern not set when browsing for iso.
+
+2005-05-06  Gautier Portet <kassoulet gmail com>
+
+	* added icons in repository, removed references to OSX since I can't manage to install a recent pygtk for now.
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* better windows icon
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* add thanks, and moved todo items to 2.0
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* marked generated files to be ignored by svn
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* some fixes for build system
+
+2005-05-04  Gautier Portet <kassoulet gmail com>
+
+	* first try with win32 build system
+
+2005-05-03  Gautier Portet <kassoulet gmail com>
+
+	* added a FileSelector backup, if FileChooser is not available
+
+2005-04-26  Gautier Portet <kassoulet gmail com>
+
+		* some minor translation fixes.
+
+2005-04-26  Gautier Portet <kassoulet gmail com>
+
+		* Woops, fixed broken folder walking.
+		    now we use recursion for the folders, and
+		    a list for the files, so the walk is correct
+		    and the overflow problems are gone
+
+2005-04-22  Gautier Portet <kassoulet gmail com>
+
+		* fixed crasher when iso contains empty files.
+		  (thanks Roald)
+		* added *.ISO in wilcards.
+		* fixed potential problem with extract and timeout.
+		* removed GTK.False deprecation (hope it will not
+		  break on previous PyGTK, this as to be checked)
+		  (thanks Kristian)
+
+2005-04-21  Gautier Portet <kassoulet gmail com>
+
+		* Added disabling of FREEROOTSPACE on Avalaunch when
+		  login.
+		* Fixed a regression which caused a crash when canceling.
+
+2005-04-21  Gautier Portet <kassoulet gmail com>
+
+		* changed browse_file to use a list and a loop
+		  instead of recursion, to fix a stack overflow
+		  (#3832)
+
+2005-04-09  Gautier Portet <kassoulet gmail com>
+
+		* added support for extracting iso from .gz and .bz2
+		  files.
+		  warning: it extract the iso in a temporary file, so
+		  be sure to have enough diskplace.
+		* fixed pause: not longer detected as a timeout.
+
+2005-03-31  Gautier Portet <kassoulet gmail com>
+
+2005-03-30  Gautier Portet <kassoulet gmail com>
+
+	* added italian translation (thanks Roberto)
+
+2005-03-30  Gautier Portet <kassoulet gmail com>
+
+	* fr translation update
+
+2005-03-30  Gautier Portet <kassoulet gmail com>
+
+	* more fr translation fixes
+	* changelog generated from svn log
+
+2005-03-14  Gautier Portet <kassoulet gmail com>
+
+	* added an error when we cannot read all the iso file
+	  this is mainly caused by 2Gb+ file when the (network) filesystem
+	  cannot handle such big files.
+	* set FTP mode to active, since EvoX don't support passive mode
+
+2005-03-05  Gautier Portet <kassoulet gmail com>
+
+	fixed unhandled exception when canceling upload
+
+2005-03-05  Gautier Portet <kassoulet gmail com>
+
+	changed transfer mode from PASV to PORT, as EvolutionX don't seems to support it
+
+2005-02-23  Gautier Portet <kassoulet gmail com>
+
+2005-02-20  Gautier Portet <kassoulet gmail com>
+
+	fixed case probleme with default.xbe
+
+2005-02-18  Gautier Portet <kassoulet gmail com>
+
+	fixed charsets for translation
+	dest folder is now a base folder, saved in settings (simplier)
+	fixed empty destination folder when no name present in iso
+
+2005-02-12  Gautier Portet <kassoulet gmail com>
+
+	*finally* got gettext to work :/
+	fixed some translation issues
+	added missing POTFILES.in in dist
+
+2005-01-26  Gautier Portet <kassoulet gmail com>
+
+	fixed translation system, gettext is called now :)
+
+2005-01-26  Gautier Portet <kassoulet gmail com>
+
+	removed forgotten debug line
+
+2005-01-26  Gautier Portet <kassoulet gmail com>
+
+	Translation system
+	setup.py fixed
+	data folder use
+
+2005-01-20  Gautier Portet <kassoulet gmail com>
+
+2005-01-20  Gautier Portet <kassoulet gmail com>
+
+	cleanups
+	started packaging system
+
+2005-01-20  Gautier Portet <kassoulet gmail com>
+
+	cleanups
+
+2005-01-19  Gautier Portet <kassoulet gmail com>
+
+	added tranfer timeout detection
+	fixed error displays
+	fixed absence of deconnection
+
+2005-01-18  Gautier Portet <kassoulet gmail com>
+
+	added message dialog on error when uploading
+
+2005-01-18  Gautier Portet <kassoulet gmail com>
+
+	buffered transfer
+	and many fixes
+
+2005-01-15  Gautier Portet <kassoulet gmail com>
+
+	many improvements
+
+2005-01-14  Gautier Portet <kassoulet gmail com>
+
+	initial commit
+
+2005-01-14  Gautier Portet <kassoulet gmail com>
+
+;; Local Variables:
+;; coding: utf-8
+;; End:

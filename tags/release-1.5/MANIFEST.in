@@ -1,0 +1,7 @@
+recursive-include src gxiso.py gxiso.png gxiso.glade gxiso.gladep
+recursive-include po *.po POTFILES.in
+include gxiso.desktop.in MANIFEST.in
+include ChangeLog
+include setup.py setup.cfg
+include README LICENSE TODO NEWS AUTHORS
+include gxiso.ico gxiso.nsi build.bat

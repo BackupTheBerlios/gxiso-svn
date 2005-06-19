@@ -1,0 +1,269 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-06-19 15:03+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/gxiso.py:136
+#, python-format
+msgid "Cannot read file:'%s'"
+msgstr ""
+
+#: src/gxiso.py:170
+#, python-format
+msgid "Cannot open archive: '%s'"
+msgstr ""
+
+#: src/gxiso.py:210
+msgid "Cannot find a RAR extractor"
+msgstr ""
+
+#: src/gxiso.py:219
+#, python-format
+msgid ""
+"Cannot find a .iso in RAR:\n"
+"%s"
+msgstr ""
+
+#: src/gxiso.py:368
+#, python-format
+msgid ""
+"<b>Cannot create folder on xbox:</b>\n"
+"%s"
+msgstr ""
+
+#: src/gxiso.py:382
+msgid "<b>Cannot connect to xbox:</b>\n"
+msgstr ""
+
+#: src/gxiso.py:407
+msgid "<b>Cannot write to xbox:</b>\n"
+msgstr ""
+
+#: src/gxiso.py:667
+#, python-format
+msgid "<b>Cannot change to directory:</b>%s"
+msgstr ""
+
+#: src/gxiso.py:779
+msgid "<b>Cannot read iso</b>"
+msgstr ""
+
+#: src/gxiso.py:784
+msgid "<b>Cannot read whole iso (too big ?)</b>"
+msgstr ""
+
+#: src/gxiso.py:790
+#, python-format
+msgid ""
+"<b>Cannot open iso:</b>\n"
+"%s"
+msgstr ""
+
+#: src/gxiso.py:800 src/gxiso.py:811
+msgid "<b>Not a valid xbox iso image</b>"
+msgstr ""
+
+#: src/gxiso.py:883
+msgid "less than one minute left."
+msgstr ""
+
+#: src/gxiso.py:885
+msgid "about one minute left."
+msgstr ""
+
+#: src/gxiso.py:887
+#, python-format
+msgid "about %d minutes left."
+msgstr ""
+
+#: src/gxiso.py:890
+msgid "Paused"
+msgstr ""
+
+#: src/gxiso.py:892
+#, python-format
+msgid "%.3f MiB/s, %s"
+msgstr ""
+
+#: src/gxiso.py:1015
+#, python-format
+msgid "Title name: <b>%s</b> (%d MB)"
+msgstr ""
+
+#: src/gxiso.py:1089
+msgid "Parsing"
+msgstr ""
+
+#: src/gxiso.py:1097
+msgid "Extracting"
+msgstr ""
+
+#: src/gxiso.py:1100
+msgid "Uploading"
+msgstr ""
+
+#: src/gxiso.py:1103
+msgid "Extracting and Uploading"
+msgstr ""
+
+#: src/gxiso.py:1111
+#, python-format
+msgid "Connecting to ftp://%s@%s"
+msgstr ""
+
+#: src/gxiso.py:1155
+msgid ""
+"<b>Transfer timeout</b>\n"
+"The xbox is not responding"
+msgstr ""
+
+#: src/gxiso.py:1176
+msgid "Deleting temporary files"
+msgstr ""
+
+#: src/gxiso.py:1185
+#, python-format
+msgid "Cannot rename <i>%s</i> to <i>%s</i>"
+msgstr ""
+
+#: src/gxiso.py:1203
+msgid "Please select an iso to read."
+msgstr ""
+
+#: src/gxiso.py:1214
+msgid "Open Xbox Iso"
+msgstr ""
+
+#: src/gxiso.py:1232 src/gxiso.py:1236
+msgid "Select Extract Folder"
+msgstr ""
+
+#: src/gxiso.py:1307
+#, python-format
+msgid ""
+"<big><b>A programming error has been detected during the execution of this "
+"program.</b></big>\n"
+"\n"
+"<tt><small>%s</small></tt>"
+msgstr ""
+
+#: src/gxiso.py:1311
+msgid "Bug Detected"
+msgstr ""
+
+#: src/gxiso.py:1344
+msgid "Cannot find data folder, please file a bug"
+msgstr ""
+
+#: src/gxiso.glade:51
+msgid "Reset values to typical defaults"
+msgstr ""
+
+#: src/gxiso.glade:97
+msgid "Defaults"
+msgstr ""
+
+#: src/gxiso.glade:124
+msgid "Start extraction/upload"
+msgstr ""
+
+#: src/gxiso.glade:170
+msgid "_Go"
+msgstr ""
+
+#: src/gxiso.glade:258
+msgid "The iso's filename"
+msgstr ""
+
+#: src/gxiso.glade:279 src/gxiso.glade:426
+msgid "Browse"
+msgstr ""
+
+#: src/gxiso.glade:327
+msgid "<b>Xiso</b>"
+msgstr ""
+
+#: src/gxiso.glade:378
+msgid "Do you want to extract to the local disk ?"
+msgstr ""
+
+#: src/gxiso.glade:380
+msgid "Save to local folder"
+msgstr ""
+
+#: src/gxiso.glade:405
+msgid "The folder where you want the iso to be extracted"
+msgstr ""
+
+#: src/gxiso.glade:453
+msgid "<b>Extract</b>"
+msgstr ""
+
+#: src/gxiso.glade:504
+msgid "Do you want to send the iso contents to an xbox ?"
+msgstr ""
+
+#: src/gxiso.glade:506
+msgid "Upload to Xbox (via FTP)"
+msgstr ""
+
+#: src/gxiso.glade:538
+msgid "Address"
+msgstr ""
+
+#: src/gxiso.glade:559
+msgid "The IP address of the Xbox (typically 192.168.0.6)"
+msgstr ""
+
+#: src/gxiso.glade:593
+msgid "Login"
+msgstr ""
+
+#: src/gxiso.glade:614
+msgid "The login for the Xbox's FTP server"
+msgstr ""
+
+#: src/gxiso.glade:634
+msgid "Password"
+msgstr ""
+
+#: src/gxiso.glade:655
+msgid "The password for the Xbox's FTP server"
+msgstr ""
+
+#: src/gxiso.glade:689
+msgid "Drive"
+msgstr ""
+
+#: src/gxiso.glade:725
+msgid "Folder"
+msgstr ""
+
+#: src/gxiso.glade:746
+msgid "The base folder on the Xbox (typically \"games\")"
+msgstr ""
+
+#: src/gxiso.glade:784
+msgid "<b>Upload</b>"
+msgstr ""
+
+#: src/gxiso.glade:820
+msgid "gXiso is working"
+msgstr ""
+
+#: src/gxiso.glade:863
+msgid "_Pause"
+msgstr ""
