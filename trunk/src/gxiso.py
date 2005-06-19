@@ -43,9 +43,6 @@ import bz2
 import gzip
 
 
-#s = os.popen( '%s x -inul "%s" "%s"' % ("c:/Progra~1/WinRAR/Rar.exe", "test.rar", "test.iso"))
-#s.read()
-
 BUFFER_SIZE=1024*16
 
 SEEK_SET = 0
@@ -1051,8 +1048,6 @@ class DialogMain(Window):
 		writer.close()
 		return name
 
-
-
 	def extract_xiso(self):
 		self.extracted_filename = None
 
@@ -1089,25 +1084,12 @@ class DialogMain(Window):
 				tmp_folder = name
 				ftp_folder += name
 
-
 		# init progress dialog
 		progress = DialogProgress()
 		progress.set_current_operation(_("Parsing"))
 		progress.set_current_file("")
 		gtk_iteration()
-
-		# parse info from xiso
-		"""xiso = XisoExtractor(NullWriter())
-		error = xiso.extract(filename)
-		if error:
-			progress.stop()
-			gtk_iteration()
-			show_error(error)
-			return
-		total_size = xiso.size
-		total_files = xiso.files
-		"""
-		
+	
 		# select writer plugin
 		writer = NullWriter()
 		if extract and not upload:
@@ -1133,15 +1115,12 @@ class DialogMain(Window):
 
 		xiso = XisoExtractor(writer)
 		thread.start_new_thread(xiso.extract, (filename,))
-		#xiso.extract(filename)
 
 		previous_position = 0
 		time_inactive = 0.0
 		previous_position = 0
 		mean_speed = 0
 		delay = 0
-
-
 
 		while xiso.active and not xiso.canceled:
 			if xiso.write_position == 0:
@@ -1337,31 +1316,7 @@ def excepthook(type, value, tb):
 
 
 
-
 if __name__ == "__main__":
-
-	"""def _(str):
-		return str
-
-	xiso = XisoExtractor(NullWriter())
-	xiso.parse("forza.iso")
-	print xiso.xbe_name
-
-	sys.exit()
-"""
-
-	""" ""
-	def _(str):
-		return str
-
-	ftp = FTPWriter("192.168.0.6","xbox","xbox","/g/tmp/")
-	ftp.init()
-	
-	ftp_delete_folder(ftp.session,"/g/tmp","Ruins")
-
-	sys.exit()
-	"" """
-
 
 	sys.excepthook = excepthook
 	name = "gxiso"

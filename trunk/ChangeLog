@@ -1,4 +1,81 @@
 # this file is generated from the subversion log. do not edit!
+2005-06-17  Gautier Portet <kassoulet gmail com>
+
+2005-06-17  Gautier Portet <kassoulet gmail com>
+
+	* changed win32 install to 1.5
+
+2005-06-17  Gautier Portet <kassoulet gmail com>
+
+2005-06-17  Gautier Portet <kassoulet gmail com>
+
+	* win32 unrar support
+
+2005-06-11  Gautier Portet <kassoulet gmail com>
+
+	* fixed broken progress
+
+2005-06-10  Gautier Portet <kassoulet gmail com>
+
+	* preparing 1.5 release
+
+2005-06-10  Gautier Portet <kassoulet gmail com>
+
+	* fixed exception with ftp connection
+
+2005-06-09  Gautier Portet <kassoulet gmail com>
+
+	* added bz2 and gz readers
+	* fixed progress for them (I can't get their size easily)
+	* file dialog filters is now sync'ed with the readers
+	  (the patterns are taken from readers)
+
+2005-06-07  Gautier Portet <kassoulet gmail com>
+
+	* final touches for linux rar support.
+
+2005-05-28  Gautier Portet <kassoulet gmail com>
+
+	* rar extraction error handling
+
+2005-05-26  Gautier Portet <kassoulet gmail com>
+
+	* handling of folders in .rar
+
+2005-05-25  Gautier Portet <kassoulet gmail com>
+
+	* finally made the progress dialog to work
+	* and less small bugs
+
+2005-05-25  Gautier Portet <kassoulet gmail com>
+
+	* added displaying current speed in progress dialog.
+	  removed the newly broken current file/total files display
+
+2005-05-24  Gautier Portet <kassoulet gmail com>
+
+	* progress calculation changed, now will work will rar
+
+2005-05-21  Gautier Portet <kassoulet gmail com>
+
+	* changed the way folders are handled.
+	  we now have a dedicaced function to create and change
+	  to the right folder.
+
+2005-05-19  Gautier Portet <kassoulet gmail com>
+
+2005-05-19  Gautier Portet <kassoulet gmail com>
+
+	* improvements for rar support
+
+2005-05-17  Gautier Portet <kassoulet gmail com>
+
+2005-05-16  Gautier Portet <kassoulet gmail com>
+
+	* rewriting of archive management.
+	  rar support
+	  (be warned, all is currently broken)
+
 2005-05-07  Gautier Portet <kassoulet gmail com>
 
 	* win32 build system fixes. ready for 1.4!
