@@ -36,8 +36,6 @@ else:
 import gtk
 import gtk.glade
 import gettext
-import pango
-import atk
 
 import bz2
 import gzip
@@ -116,7 +114,6 @@ except AttributeError:
 
 
 total_size=0
-
 
 
 class ReaderError(Exception):
@@ -1052,7 +1049,7 @@ class DialogMain(Window):
 		self.extracted_filename = None
 
 		# get infos from ui
-		drives = ["/c/","/e/","/f/","/g/"]
+		drives = ["/C/","/E/","/F/","/G/"]
 		filename = self.ui_entry_xiso.get_text()
 		local_folder = self.ui_entry_folder.get_text()
 		ftp_folder = drives[self.ui_combobox_xbox_drive.get_active()] + \
