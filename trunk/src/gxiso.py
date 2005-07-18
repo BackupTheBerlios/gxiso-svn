@@ -1015,19 +1015,16 @@ class DialogMain(Window):
 				self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
 
 	def xboxify_filename(self, filename):
-		filters = (
-			".",
-			",",
-			";",
-			":",
-		)
-		
-		print repr(filename)
-		
-		name = filename[:40]
-		for f in filters:
-			name = name.replace(f," ")
+		name = ""
+		for c in filename:
+			if c.isalnum():
+				name += c
+			elif name[-1] != " ":
+				name += " "
+	
+		name = name[:40]
 		return name
+
 
 	def extract_archive_UNUSED(self, extractor, filename):
 		self.extracted_filename = extractor.extract(filename)
@@ -1310,7 +1307,6 @@ def excepthook(type, value, tb):
 	dialog.run()
 	dialog.hide()
 	sys.exit(1)
-
 
 
 if __name__ == "__main__":
