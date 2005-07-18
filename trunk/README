@@ -15,9 +15,12 @@ how to install ?
 
 	Windows:
 	use the binary installlers.
+	You MUST have winrar installed in c:\program files\winrar for
+	RAR support.
 
 	linux:
 	sudo python setup.py install
+	You MUST have unrar (or better: rar) installed for RAR support.
 	
 notes: 
 	* xbox has to be started (ahem) and running a FTP server to receive files.
