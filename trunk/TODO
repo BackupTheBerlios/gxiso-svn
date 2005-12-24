@@ -1,9 +1,6 @@
 
 For 2.0:
 
-? add gnomevfs support for reading iso
-
 * optionnally delete iso after successful job
-* add RAR support
 * batch extract/upload
 
