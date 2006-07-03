@@ -24,22 +24,38 @@ import re
 import struct
 import thread
 import ftplib
+from urlparse import urlparse
 import socket
 import pygtk
 
 if sys.platform != 'win32':
 	pygtk.require('2.0')
 else:
-	from _winreg import * 		import msvcrt		def win32_popen(command):		f = saved_popen(command)
-		msvcrt.setmode(f.fileno(),os.O_BINARY)		return f			saved_popen = os.popen	os.popen = win32_popen
+	from _winreg import * 
+	import msvcrt
+		
+	def win32_popen(command):
+		f = saved_popen(command)
+		msvcrt.setmode(f.fileno(),os.O_BINARY)
+		return f
+		
+	saved_popen = os.popen
+	os.popen = win32_popen
 
-import gtk
-import gtk.glade
+try:
+	import gtk
+	import gtk.glade
+except RuntimeError:
+	# no X present
+
+	def _(s):
+		return s
+
 import gettext
 
 import bz2
 import gzip
-
+import getopt
 
 BUFFER_SIZE=1024*16
 
@@ -111,10 +127,35 @@ except AttributeError:
 		return dialog
 
 	CreateFolderChooser = CreateFileChooser
-
+except NameError:
+	# no X
+	pass
 
 total_size=0
 
+
+def ftp_create_tmp_folder(self, ip, login, password, folder):
+	
+	writer = FTPWriter(ip, login, password, folder)
+	writer.init()
+	for i in range(1000):
+		name = "gxiso%03d" % i
+		if writer.mkdir(name):
+			break;
+			
+	writer.close()
+	return name
+
+def xboxify_filename(self, filename):
+	name = ""
+	for c in filename:
+		if c.isalnum():
+			name += c
+		elif name[-1] != " ":
+			name += " "
+
+	name = name[:40]
+	return name
 
 class ReaderError(Exception):
 	def __init__(self, message):
@@ -813,6 +854,7 @@ class XisoExtractor:
 
 		return None
 
+
 class Window:
 	# all windows herits from this class
 	def load_glade(self, xml, container):
@@ -900,6 +942,7 @@ class DialogProgress(Window):
 
 	def on_button_cancel_clicked(self, widget):
 		self.canceled = True
+
 
 
 class DialogMain(Window):
@@ -1014,33 +1057,10 @@ class DialogMain(Window):
 			if self.ui_entry_folder.get_text() and self.xbe_name != "":
 				self.ui_entry_folder.set_text(os.path.join(os.getcwd(),self.xbe_name))
 
-	def xboxify_filename(self, filename):
-		name = ""
-		for c in filename:
-			if c.isalnum():
-				name += c
-			elif name[-1] != " ":
-				name += " "
-	
-		name = name[:40]
-		return name
-
 
 	def extract_archive_UNUSED(self, extractor, filename):
 		self.extracted_filename = extractor.extract(filename)
 		self.extracting = False
-
-	def create_tmp_folder(self, ip, login, password, folder):
-		
-		writer = FTPWriter(ip, login, password, folder)
-		writer.init()
-		for i in range(1000):
-			name = "gxiso%03d" % i
-			if writer.mkdir(name):
-				break;
-				
-		writer.close()
-		return name
 
 	def extract_xiso(self):
 		self.extracted_filename = None
@@ -1064,11 +1084,11 @@ class DialogMain(Window):
 
 		rename = None
 		if self.xbe_name:
-			ftp_folder += self.xboxify_filename(self.xbe_name)
+			ftp_folder += xboxify_filename(self.xbe_name)
 		else:
 			if upload:
 				try:
-					name = self.create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
+					name = ftp_create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
 				except ExtractError, error:
 					show_error(error.message)
 					return
@@ -1265,8 +1285,76 @@ class GXiso:
 		dialog_main.show()
 		gtk.main()
 
+def extract_iso(filename, dest):
 
+	filename = os.path.abspath(filename)
+	rename = None
 
+	url = urlparse(dest)
+	if not url[0]:
+		try:
+			os.makedirs(url[2])
+		except OSError:
+			pass
+		writer = FileWriter(dest)
+	else:
+		if url[0] == "ftp":
+			tmp, ftp_ip = url[1].split("@")
+			ftp_login, ftp_password = tmp.split(":")
+			ftp_folder = url[2]
+			if ftp_folder[-1] != "/":
+				ftp_folder += "/"
+			try:
+				name = self.create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
+			except ExtractError, error:
+				show_error(error.message)
+				return
+			rename = name
+			writer = FTPWriter(ftp_ip, ftp_login, ftp_password, ftp_folder)
+			print "creating temp folder:", name
+			print "'%s' '%s' '%s' '%s'" % (username, password, hostname, folder)
+		else:
+			print "only ftp protocol is supported in URLs"
+			return
+
+	starttime = time.time()
+	xiso = XisoExtractor(writer)
+	thread.start_new_thread(xiso.extract, (filename,))
+
+	while xiso.active and not xiso.canceled:
+
+		if xiso.write_position == 0:
+			print "%s starting...\r" % (["\\","-","/","|"] [ int(time.time()) % 4 ]) 
+		else:
+			if xiso.iso.size:
+				fraction = 100.0 * float(xiso.write_position)/float(xiso.iso.size)
+				mean_speed = xiso.write_position/(time.time()-starttime) / (1024.0*1024.0)
+				print "%3.2f%% %3.2fMiB/s %s \r" % ( fraction, mean_speed, xiso.current_file )
+		time.sleep(1)
+
+	if rename:
+		try:
+			writer = FTPWriter(ftp_ip, ftp_login, ftp_password, ftp_folder)
+			writer.init()
+			if xiso.canceled:
+				log( "deleting: %s" % (ftp_base_folder+tmp_folder) )
+				ftp_delete_folder(writer.session, ftp_base_folder, tmp_folder)
+			elif xiso.xbe_name:
+				writer.chdir(ftp_base_folder)
+				newname = self.xboxify_filename(xiso.xbe_name)
+				log( "deleting: %s" % (ftp_base_folder+newname) )
+				ftp_delete_folder(writer.session, ftp_base_folder, newname)
+				log( "renaming: %s -> %s" % (rename, newname) )
+				if not writer.rename(rename, newname):
+					show_error( _("Cannot rename <i>%s</i> to <i>%s</i>") \
+						% (rename, newname) )
+		except ExtractError, error:
+			show_error(error.message)
+
+	if xiso.error:
+		print "error: ", xiso.error
+	elif not xiso.canceled:
+		log( "done! (in %ds, %.3f MiB/s)" % (time.time()-starttime,xiso.write_position/(time.time()-starttime)/(1024*1024.0)))
 
 def find_data_dir():
 	# search for our data :)
@@ -1309,21 +1397,62 @@ def excepthook(type, value, tb):
 	sys.exit(1)
 
 
+def usage():
+	print """usage: gxiso [--extract filename.iso --dest DESTINATION]
+	where DESTINATION can be a local folder (/path/to/folder) or a ftp folder
+	of this form: ftp://user:password@ftpserver/path/to/folder
+	"""
+
 if __name__ == "__main__":
 
-	sys.excepthook = excepthook
 	name = "gxiso"
 
 	try:
 		gtk.glade.bindtextdomain(name)
 		gtk.glade.textdomain(name)
 		gettext.install(name, unicode=1)
+		sys.excepthook = excepthook
 	except LookupError:
 		#TODO: gettext fails on win32
 		log("gettext error, disabling...")
 		def _(str):
 			return str
+	except NameError:
+		# no X
+		pass
 
+	# command line parsing
+	# gxiso -e --extract file.iso -d --dest [/local/folder | ftp://user:pass@ip/folder]
+
+	try:
+		opts, args = getopt.gnu_getopt(sys.argv[1:], "he:d:", ["help","extract=","dest="])
+	except getopt.GetoptError:
+		usage()
+		sys.exit()
+
+	iso = None
+	dest = None
+
+	for o,a in opts:
+		if o in ("-h", "--help"):
+			usage()
+			sys.exit()
+		if o in ("-e", "--extract"):
+			iso = a
+		if o in ("-d", "--dest"):
+			dest = a
+
+
+	if iso and dest:
+		extract_iso(iso, dest)
+		sys.exit()
+
+	elif iso or dest:
+		usage()
+		print "you need to provide both iso filename and extract destination"
+		sys.exit()
+	
+	# interactive mode
 	DATADIR = find_data_dir()
 	if DATADIR:
 		saved_folder = os.getcwd()
