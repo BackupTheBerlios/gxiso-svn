@@ -134,7 +134,7 @@ except NameError:
 total_size=0
 
 
-def ftp_create_tmp_folder(self, ip, login, password, folder):
+def ftp_create_tmp_folder(ip, login, password, folder):
 	
 	writer = FTPWriter(ip, login, password, folder)
 	writer.init()
@@ -146,7 +146,7 @@ def ftp_create_tmp_folder(self, ip, login, password, folder):
 	writer.close()
 	return name
 
-def xboxify_filename(self, filename):
+def xboxify_filename(filename):
 	name = ""
 	for c in filename:
 		if c.isalnum():
@@ -1179,8 +1179,6 @@ class DialogMain(Window):
 			gtk_iteration()
 			time.sleep(0.1)
 
-			
-		
 		if rename:
 			try:
 				writer = FTPWriter(ftp_ip, ftp_login, ftp_password, ftp_folder)
@@ -1305,14 +1303,14 @@ def extract_iso(filename, dest):
 			if ftp_folder[-1] != "/":
 				ftp_folder += "/"
 			try:
-				name = self.create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
+				name = ftp_create_tmp_folder(ftp_ip,ftp_login,ftp_password,ftp_folder)
+				ftp_base_folder = ftp_folder
 			except ExtractError, error:
 				show_error(error.message)
 				return
 			rename = name
 			writer = FTPWriter(ftp_ip, ftp_login, ftp_password, ftp_folder)
 			print "creating temp folder:", name
-			print "'%s' '%s' '%s' '%s'" % (username, password, hostname, folder)
 		else:
 			print "only ftp protocol is supported in URLs"
 			return
@@ -1341,15 +1339,15 @@ def extract_iso(filename, dest):
 				ftp_delete_folder(writer.session, ftp_base_folder, tmp_folder)
 			elif xiso.xbe_name:
 				writer.chdir(ftp_base_folder)
-				newname = self.xboxify_filename(xiso.xbe_name)
+				newname = xboxify_filename(xiso.xbe_name)
 				log( "deleting: %s" % (ftp_base_folder+newname) )
 				ftp_delete_folder(writer.session, ftp_base_folder, newname)
 				log( "renaming: %s -> %s" % (rename, newname) )
 				if not writer.rename(rename, newname):
-					show_error( _("Cannot rename <i>%s</i> to <i>%s</i>") \
+					print "error:", ( "Cannot rename <i>%s</i> to <i>%s</i>" \
 						% (rename, newname) )
 		except ExtractError, error:
-			show_error(error.message)
+			print "error:", error.message
 
 	if xiso.error:
 		print "error: ", xiso.error
