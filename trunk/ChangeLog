@@ -1,6 +1,7 @@
 2006-07-03  Gautier Portet <kassoulet gmail com>
 
 	* Added a command line version.
+	  You can now use it from terminals, SSHs or scripts \o/
 
 2005-06-17  Gautier Portet <kassoulet gmail com>
 

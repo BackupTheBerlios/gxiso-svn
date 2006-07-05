@@ -89,9 +89,12 @@ def show_error(message):
 	dialog.run()
 	dialog.hide()
 
-def log(message):
+quiet = False
+
+def log(*args):
 	# display a log message on stdout
-	print message
+	if not quiet:
+		print " ".join(args)
 
 
 # use FileChooser or FileSelection ?
@@ -191,7 +194,7 @@ class FileReader:
 	
 	def close(self):
 		self.file.close()
-		print "skipped %d bytes." % self.skipped
+		#print "skipped %d bytes." % self.skipped
 
 
 class GenericArchiveReader:
@@ -239,13 +242,15 @@ class RarReader (GenericArchiveReader):
 	
 	def create_stream(self, filename):
 		# detecting unrar
-		unrar_list=("rar","unrar", "c:/Progra~1/WinRAR/Rar.exe")
+		unrar_list=("rar","unrar")
+		if sys.platform == "win32":
+			unrar_list.append("c:/Progra~1/WinRAR/Rar.exe")
 		unrar = None
 		for i in unrar_list:
 			if os.popen(i).read():
 				unrar = i
 		if not unrar:
-			raise ReaderError(_("Cannot find a RAR extractor"))
+			raise ReaderError(_("RAR extractor not found"))
 		
 		list_stream = os.popen('%s v "%s"' % (unrar, filename) )
 		list = list_stream.read()
@@ -603,7 +608,7 @@ def ftp_delete_folder(session, base_folder, folder_to_delete):
 		session.cwd(base_folder)
 		session.rmd(folder_to_delete)	
 	except ftplib.error_perm:
-		print "error while deleting:", "/".join( (base_folder,folder_to_delete) )
+		log("error while deleting:", "/".join( (base_folder,folder_to_delete) ))
 
 class XisoExtractor:
 
@@ -634,7 +639,7 @@ class XisoExtractor:
 		for i in range(len(name)):
 			if name[i] != "\x00":
 				self.xbe_name += name[i]
-		print "detected xbename:", self.xbe_name	
+		log( "detected xbename:", self.xbe_name	)
 
 		self.writer.write(buffer);
 		self.write_position += readsize
@@ -1093,7 +1098,7 @@ class DialogMain(Window):
 					show_error(error.message)
 					return
 				rename = name
-				print "creating temp folder:", name
+				log( "creating temp folder:", name)
 				ftp_base_folder = ftp_folder
 				tmp_folder = name
 				ftp_folder += name
@@ -1310,9 +1315,9 @@ def extract_iso(filename, dest):
 				return
 			rename = name
 			writer = FTPWriter(ftp_ip, ftp_login, ftp_password, ftp_folder)
-			print "creating temp folder:", name
+			log("creating temp folder:", name)
 		else:
-			print "only ftp protocol is supported in URLs"
+			log("only ftp protocol is supported in URLs")
 			return
 
 	starttime = time.time()
@@ -1321,15 +1326,27 @@ def extract_iso(filename, dest):
 
 	while xiso.active and not xiso.canceled:
 
+		fraction = 0
 		if xiso.write_position == 0:
-			print "%s starting...\r" % (["\\","-","/","|"] [ int(time.time()) % 4 ]) 
+			msg = "%s starting..." % (["\\","-","/","|"] [ int(time.time()) % 4 ])
+			sys.stdout.flush()
 		else:
 			if xiso.iso.size:
 				fraction = 100.0 * float(xiso.write_position)/float(xiso.iso.size)
 				mean_speed = xiso.write_position/(time.time()-starttime) / (1024.0*1024.0)
-				print "%3.2f%% %3.2fMiB/s %s \r" % ( fraction, mean_speed, xiso.current_file )
-		time.sleep(1)
+				msg = "["
+				msg += "*" * int(fraction/4)
+				msg += " " * int((100-fraction)/4)
+				msg += "] "
+				msg += "%3.2F%% %3.2fMiB/s" % ( fraction, mean_speed)
 
+		if not quiet:
+			sys.stdout.write( "\r%s\r" % msg  )
+			sys.stdout.flush()
+		time.sleep(0.1)
+
+	if not quiet:
+		print ""
 	if rename:
 		try:
 			writer = FTPWriter(ftp_ip, ftp_login, ftp_password, ftp_folder)
@@ -1344,13 +1361,13 @@ def extract_iso(filename, dest):
 				ftp_delete_folder(writer.session, ftp_base_folder, newname)
 				log( "renaming: %s -> %s" % (rename, newname) )
 				if not writer.rename(rename, newname):
-					print "error:", ( "Cannot rename <i>%s</i> to <i>%s</i>" \
-						% (rename, newname) )
+					log( "error:", ( "Cannot rename <i>%s</i> to <i>%s</i>" \
+						% (rename, newname) ))
 		except ExtractError, error:
-			print "error:", error.message
+			log( "error:", error.message)
 
 	if xiso.error:
-		print "error: ", xiso.error
+		log( "error: ", xiso.error)
 	elif not xiso.canceled:
 		log( "done! (in %ds, %.3f MiB/s)" % (time.time()-starttime,xiso.write_position/(time.time()-starttime)/(1024*1024.0)))
 
@@ -1399,6 +1416,7 @@ def usage():
 	print """usage: gxiso [--extract filename.iso --dest DESTINATION]
 	where DESTINATION can be a local folder (/path/to/folder) or a ftp folder
 	of this form: ftp://user:password@ftpserver/path/to/folder
+		--quiet : don't display anything
 	"""
 
 if __name__ == "__main__":
@@ -1423,7 +1441,7 @@ if __name__ == "__main__":
 	# gxiso -e --extract file.iso -d --dest [/local/folder | ftp://user:pass@ip/folder]
 
 	try:
-		opts, args = getopt.gnu_getopt(sys.argv[1:], "he:d:", ["help","extract=","dest="])
+		opts, args = getopt.gnu_getopt(sys.argv[1:], "qhe:d:", ["quiet","help","extract=","dest="])
 	except getopt.GetoptError:
 		usage()
 		sys.exit()
@@ -1432,6 +1450,8 @@ if __name__ == "__main__":
 	dest = None
 
 	for o,a in opts:
+		if o in ("-q", "--quiet"):
+			quiet = True
 		if o in ("-h", "--help"):
 			usage()
 			sys.exit()
@@ -1455,6 +1475,12 @@ if __name__ == "__main__":
 	if DATADIR:
 		saved_folder = os.getcwd()
 		os.chdir(DATADIR)
+
+		try:	
+			import gtk
+		except RuntimeError, e:
+			print "Error when loading GTK: '%s'" % e
+			sys.exit()
 
 		program = GXiso()
 		program.main()

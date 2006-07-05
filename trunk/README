@@ -21,7 +21,10 @@ how to install ?
 	linux:
 	sudo python setup.py install
 	You MUST have unrar (or better: rar) installed for RAR support.
-	
+
+using from command line:
+	see gxiso --help
+
 notes: 
 	* xbox has to be started (ahem) and running a FTP server to receive files.
 	* when using avalaunch: disable boost mode and free root space
