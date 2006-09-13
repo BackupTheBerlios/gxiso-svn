@@ -7,8 +7,8 @@ assert sys.version >= '2', "Install Python 2.0 or greater"
 from distutils.core import setup, Extension
 
 PACKAGE="gxiso"
-VERSION="1.7"
-ALL_LINGUAS=["fr", "it"]
+VERSION="1.6"
+ALL_LINGUAS=["fr", "it", "sv_SE"]
 
 #hack hack HACK !!!
 #maybe I will just use autoconf...

@@ -1,3 +1,7 @@
+2006-09-13  Gautier Portet <kassoulet gmail com>
+
+	* po/sv_SE.po: new swedish translation.
+
 2006-07-03  Gautier Portet <kassoulet gmail com>
 
 	* Added a command line version.
@@ -5,11 +9,7 @@
 
 2005-06-17  Gautier Portet <kassoulet gmail com>
 
-2005-06-17  Gautier Portet <kassoulet gmail com>
-
 	* changed win32 install to 1.5
-
-2005-06-17  Gautier Portet <kassoulet gmail com>
 
 2005-06-17  Gautier Portet <kassoulet gmail com>
 
@@ -71,8 +71,6 @@
 2005-05-19  Gautier Portet <kassoulet gmail com>
 
 	* improvements for rar support
-
-2005-05-17  Gautier Portet <kassoulet gmail com>
 
 2005-05-16  Gautier Portet <kassoulet gmail com>
 

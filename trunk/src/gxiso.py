@@ -26,28 +26,31 @@ import thread
 import ftplib
 from urlparse import urlparse
 import socket
-import pygtk
+try:
+	import pygtk
 
-if sys.platform != 'win32':
-	pygtk.require('2.0')
-else:
-	from _winreg import * 
-	import msvcrt
-		
-	def win32_popen(command):
-		f = saved_popen(command)
-		msvcrt.setmode(f.fileno(),os.O_BINARY)
-		return f
-		
-	saved_popen = os.popen
-	os.popen = win32_popen
+	if sys.platform != 'win32':
+		pygtk.require('2.0')
+	else:
+		from _winreg import * 
+		import msvcrt
+			
+		def win32_popen(command):
+			f = saved_popen(command)
+			msvcrt.setmode(f.fileno(),os.O_BINARY)
+			return f
+			
+		saved_popen = os.popen
+		os.popen = win32_popen
+
+except ImportError:
+	pass
 
 try:
 	import gtk
 	import gtk.glade
-except RuntimeError:
+except:
 	# no X present
-
 	def _(s):
 		return s
 
