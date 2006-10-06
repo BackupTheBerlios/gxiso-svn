@@ -1197,7 +1197,7 @@ class DialogMain(Window):
 					ftp_delete_folder(writer.session, ftp_base_folder, tmp_folder)
 				elif xiso.xbe_name:
 					writer.chdir(ftp_base_folder)
-					newname = self.xboxify_filename(xiso.xbe_name)
+					newname = xboxify_filename(xiso.xbe_name)
 					log( "deleting: %s" % (ftp_base_folder+newname) )
 					ftp_delete_folder(writer.session, ftp_base_folder, newname)
 					log( "renaming: %s -> %s" % (rename, newname) )
